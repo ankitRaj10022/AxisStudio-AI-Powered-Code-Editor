@@ -1,0 +1,20 @@
+import React from 'react'
+import Image from 'next/image'
+
+interface Props{
+    title: string;
+    description: string;
+    imageSrc?: string;
+}
+
+const EmptyState = ({title, description, imageSrc}:Props) => {
+  return (
+    <div className="flex flex-col justify-center items-center py-16">
+        <Image src={imageSrc!} alt={title} className='w-48 h-48 mb-4' width={90} height={90} />
+        <h2 className="text-xl font-semibold mb-2 text-gray-500">{title}</h2>
+        <p className="text-gray-400">{description}</p>
+    </div>
+  )
+}
+
+export default EmptyState
