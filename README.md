@@ -8,14 +8,14 @@ The interface is simple and professional. Navigation is quick: move between file
 
 Key features:
 
-AI-Assisted Coding: Smart suggestions, auto-complete, and quick boilerplate generation.
+	1.AI-Assisted Coding: Smart suggestions, auto-complete, and quick boilerplate generation.
 
-Smart Debugging: Early error detection with clear explanations and recommended fixes.
+	2.Smart Debugging: Early error detection with clear explanations and recommended fixes.
 
-Refactoring Tools: Automated improvements for cleaner, more readable code.
+	3.Refactoring Tools: Automated improvements for cleaner, more readable code.
 
-Project Awareness: Understands how files and modules connect across the project.
+	4.Project Awareness: Understands how files and modules connect across the project.
 
-Minimal Design: A clean, distraction-free editor focused on speed and clarity.
+	5.Minimal Design: A clean, distraction-free editor focused on speed and clarity.
 
 AxisStudio demonstrates how AI can support developers while still keeping them in control, helping turn ideas into working code with less friction and more focus.
