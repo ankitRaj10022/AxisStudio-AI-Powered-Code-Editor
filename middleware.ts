@@ -8,7 +8,6 @@ import {
 } from "@/routes";
 import authConfig from "./auth.config";
 
-
 const { auth } = NextAuth(authConfig);
 
 // @ts-ignore
@@ -33,14 +32,13 @@ export default auth((req) => {
     return null;
   }
 
-  if(!isLoggedIn && !isPublicRoute){
-    return Response.redirect(new URL("/auth/sign-in" , nextUrl))
+  if (!isLoggedIn && !isPublicRoute) {
+    return Response.redirect(new URL("/auth/sign-in", nextUrl));
   }
 
-  return null
+  return null;
 });
 
 export const config = {
-  // copied from clerk
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 };

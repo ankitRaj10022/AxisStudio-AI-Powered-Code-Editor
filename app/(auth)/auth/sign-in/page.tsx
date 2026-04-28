@@ -1,17 +1,12 @@
-import SignInFormClient from '@/features/auth/components/sign-in-form-client'
-import Image from 'next/image'
-import React from 'react'
+import SignInExperience from "@/features/auth/components/sign-in-experience";
+import SignInFormClient from "@/features/auth/components/sign-in-form-client";
 
 const SignInPage = () => {
   return (
-    <>
-        <Image src={"/login.svg"} alt="Login-Image" height={300} 
-        width={300}
-        className='m-6 object-cover'
-        />
-        <SignInFormClient/>
-    </>
-  )
-}
+    <SignInExperience>
+      <SignInFormClient />
+    </SignInExperience>
+  );
+};
 
 export default SignInPage

@@ -1,15 +1,5 @@
 import Link from "next/link";
 import { Github as LucideGithub } from "lucide-react";
-import Image from "next/image";
-
-interface ProjectLink {
-  href: string | null;
-  text: string;
-  description: string;
-  icon: string;
-  iconDark?: string;
-  isNew?: boolean;
-}
 
 export function Footer() {
   const socialLinks = [
@@ -22,10 +12,22 @@ export function Footer() {
   ];
 
   return (
-    <footer className="border-t border-zinc-200 dark:border-zinc-800">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 flex flex-col items-center space-y-6 text-center">
-        {/* Social Links */}
-        <div className="flex gap-4">
+    <footer className="px-4 pb-8 pt-16 sm:px-6">
+      <div className="axis-panel mx-auto flex max-w-7xl flex-col gap-8 rounded-[2rem] px-6 py-8 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">
+            axisStudio
+          </p>
+          <h2 className="max-w-xl text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            Build ambitious products in a browser workspace that feels engineered, not generic.
+          </h2>
+          <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
+            Code, preview, and iterate inside one visual system with AI assistance when you need it.
+          </p>
+        </div>
+
+        <div className="flex flex-col items-start gap-6 lg:items-end">
+          <div className="flex gap-4">
           {socialLinks.map((link, index) => (
             <Link
               key={index}
@@ -37,11 +39,10 @@ export function Footer() {
             </Link>
           ))}
         </div>
-
-        {/* Copyright Notice */}
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          &copy; {new Date().getFullYear()} Codesnippet. All rights reserved.
-        </p>
+          <p className="text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} axisStudio. All rights reserved.
+          </p>
+        </div>
       </div>
     </footer>
   );

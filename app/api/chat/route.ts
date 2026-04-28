@@ -5,6 +5,18 @@ interface ChatMessage {
   content: string
 }
 
+function isChatMessage(value: unknown): value is ChatMessage {
+  if (typeof value !== "object" || value === null) {
+    return false
+  }
+
+  const candidate = value as { role?: unknown; content?: unknown }
+  return (
+    (candidate.role === "user" || candidate.role === "assistant") &&
+    typeof candidate.content === "string"
+  )
+}
+
 interface EnhancePromptRequest {
   prompt: string
   context?: {
@@ -139,16 +151,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Message is required and must be a string" }, { status: 400 })
     }
 
-    const validHistory = Array.isArray(history)
-      ? history.filter(
-          (msg: any) =>
-            msg &&
-            typeof msg === "object" &&
-            typeof msg.role === "string" &&
-            typeof msg.content === "string" &&
-            ["user", "assistant"].includes(msg.role),
-        )
-      : []
+    const validHistory = Array.isArray(history) ? history.filter(isChatMessage) : []
 
     const recentHistory = validHistory.slice(-10)
     const messages: ChatMessage[] = [...recentHistory, { role: "user", content: message }]

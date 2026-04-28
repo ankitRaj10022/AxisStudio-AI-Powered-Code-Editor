@@ -1,6 +1,7 @@
 "use server"
 import { currentUser } from "@/features/auth/actions";
 import { db } from "@/lib/db"
+import { logDatabaseError } from "@/lib/database-error";
 import { TemplateFolder } from "../libs/path-to-json";
 import { revalidatePath } from "next/cache";
 
@@ -37,7 +38,7 @@ export const toggleStarMarked = async (playgroundId: string, isChecked: boolean)
     revalidatePath("/dashboard");
     return { success: true, isMarked: isChecked };
   } catch (error) {
-    console.error("Error updating problem:", error);
+    logDatabaseError("toggleStarMarked", error);
     return { success: false, error: "Failed to update problem" };
   }
 };
@@ -62,7 +63,8 @@ export const createPlayground = async (data:{
 
         return playground;
     } catch (error) {
-        console.log(error)
+        logDatabaseError("createPlayground", error)
+        return null
     }
 }
 
@@ -90,7 +92,8 @@ export const getAllPlaygroundForUser = async ()=>{
       
         return playground;
     } catch (error) {
-        console.log(error)
+        logDatabaseError("getAllPlaygroundForUser", error)
+        return []
     }
 }
 
@@ -108,7 +111,8 @@ export const getPlaygroundById = async (id:string)=>{
         })
         return playground;
     } catch (error) {
-        console.log(error)
+        logDatabaseError("getPlaygroundById", error)
+        return null
     }
 }
 
@@ -132,7 +136,7 @@ export const SaveUpdatedCode = async (playgroundId: string, data: TemplateFolder
 
     return updatedPlayground;
   } catch (error) {
-    console.log("SaveUpdatedCode error:", error);
+    logDatabaseError("SaveUpdatedCode", error);
     return null;
   }
 };
@@ -144,7 +148,7 @@ export const deleteProjectById = async (id:string)=>{
         })
         revalidatePath("/dashboard")
     } catch (error) {
-        console.log(error)
+        logDatabaseError("deleteProjectById", error)
     }
 }
 
@@ -157,7 +161,7 @@ export const editProjectById = async (id:string,data:{title:string , description
         })
         revalidatePath("/dashboard")
     } catch (error) {
-        console.log(error)
+        logDatabaseError("editProjectById", error)
     }
 }
 
@@ -196,6 +200,7 @@ export const duplicateProjectById = async (id: string) => {
 
         return duplicatedPlayground;
     } catch (error) {
-        console.error("Error duplicating project:", error);
+        logDatabaseError("duplicateProjectById", error);
+        return null
     }
 };

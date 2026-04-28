@@ -50,9 +50,10 @@ export async function POST(request: NextRequest) {
         generatedAt: new Date().toISOString(),
       },
     })
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error"
     console.error("Context analysis error:", error)
-    return NextResponse.json({ error: "Internal server error", message: error.message }, { status: 500 })
+    return NextResponse.json({ error: "Internal server error", message }, { status: 500 })
   }
 }
 
@@ -236,12 +237,4 @@ function detectIncompletePatterns(line: string, column: number): string[] {
   if (/\.\s*$/.test(beforeCursor)) patterns.push("method-call")
 
   return patterns
-}
-
-function getLastNonEmptyLine(lines: string[], currentLine: number): string {
-  for (let i = currentLine - 1; i >= 0; i--) {
-    const line = lines[i]
-    if (line.trim() !== "") return line
-  }
-  return ""
 }

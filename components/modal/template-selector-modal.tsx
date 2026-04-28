@@ -50,6 +50,8 @@ interface TemplateOption {
   category: "frontend" | "backend" | "fullstack";
 }
 
+type TemplateCategory = "all" | TemplateOption["category"];
+
 const templates: TemplateOption[] = [
   {
     id: "react",
@@ -143,9 +145,7 @@ const TemplateSelectionModal = ({
   const [step, setStep] = useState<"select" | "configure">("select");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [category, setCategory] = useState<
-    "all" | "frontend" | "backend" | "fullstack"
-  >("all");
+  const [category, setCategory] = useState<TemplateCategory>("all");
   const [projectName, setProjectName] = useState("");
 
   const filteredTemplates = templates.filter((template) => {
@@ -210,6 +210,12 @@ const TemplateSelectionModal = ({
     setStep("select");
   };
 
+  const handleCategoryChange = (value: string) => {
+    if (value === "all" || value === "frontend" || value === "backend" || value === "fullstack") {
+      setCategory(value);
+    }
+  };
+
   const renderStars = (count: number) => {
     return Array(5)
       .fill(0)
@@ -268,7 +274,7 @@ const TemplateSelectionModal = ({
                 <Tabs
                   defaultValue="all"
                   className="w-full sm:w-auto"
-                  onValueChange={(value) => setCategory(value as any)}
+                  onValueChange={handleCategoryChange}
                 >
                   <TabsList className="grid grid-cols-4 w-full sm:w-[400px]">
                     <TabsTrigger value="all">All</TabsTrigger>

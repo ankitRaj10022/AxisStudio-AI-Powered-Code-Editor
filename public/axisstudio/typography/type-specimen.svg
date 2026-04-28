@@ -1,0 +1,13 @@
+<svg width="640" height="320" viewBox="0 0 640 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="320" rx="36" fill="#151922"/>
+  <rect x="28" y="28" width="584" height="264" rx="28" fill="#1B2030" stroke="#30384B"/>
+  <text x="72" y="138" fill="#F8FAFC" font-family="Space Grotesk, Arial, sans-serif" font-size="86" font-weight="700" letter-spacing="-4">axisStudio</text>
+  <text x="74" y="184" fill="#94A3B8" font-family="IBM Plex Mono, monospace" font-size="18" font-weight="500" letter-spacing="3">BROWSER IDE / DESIGN SYSTEM / RUNTIME</text>
+  <text x="74" y="244" fill="url(#accent)" font-family="Space Grotesk, Arial, sans-serif" font-size="32" font-weight="600" letter-spacing="-1">Thoughtful interfaces for serious build loops.</text>
+  <defs>
+    <linearGradient id="accent" x1="74" y1="220" x2="560" y2="260" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FB7185"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -1,28 +1,33 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import * as monaco from "monaco-editor"
-import { loader } from "@monaco-editor/react"
-import { cn } from "@/lib/utils"
+import { useEffect, useRef, useState } from "react";
+import * as monaco from "monaco-editor";
+import { loader } from "@monaco-editor/react";
+import { cn } from "@/lib/utils";
 
-// Configure Monaco loader
-loader.config({ monaco })
+loader.config({ monaco });
 
 interface MonacoEditorProps {
-  content: string
-  language: string
-  onChange?: (value: string) => void
-  readOnly?: boolean
-  className?: string
+  content: string;
+  language: string;
+  onChange?: (value: string) => void;
+  readOnly?: boolean;
+  className?: string;
 }
 
-export function MonacoEditor({ content, language, onChange, readOnly = false, className }: MonacoEditorProps) {
-  const editorRef = useRef<HTMLDivElement>(null)
-  const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor | null>(null)
+export function MonacoEditor({
+  content,
+  language,
+  onChange,
+  readOnly = false,
+  className,
+}: MonacoEditorProps) {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [editor, setEditor] =
+    useState<monaco.editor.IStandaloneCodeEditor | null>(null);
 
-  // Initialize editor
   useEffect(() => {
-    if (!editorRef.current) return
+    if (!editorRef.current) return;
 
     const newEditor = monaco.editor.create(editorRef.current, {
       value: content,
@@ -40,48 +45,53 @@ export function MonacoEditor({ content, language, onChange, readOnly = false, cl
         verticalScrollbarSize: 10,
         horizontalScrollbarSize: 10,
       },
-    })
+    });
 
-    setEditor(newEditor)
+    setEditor(newEditor);
 
     return () => {
-      newEditor.dispose()
-    }
-  }, [editorRef.current])
+      newEditor.dispose();
+    };
+  }, [editorRef.current]);
 
-  // Update content when it changes
   useEffect(() => {
     if (editor && content !== editor.getValue()) {
-      editor.setValue(content)
+      editor.setValue(content);
     }
-  }, [content, editor])
+  }, [content, editor]);
 
-  // Update language when it changes
   useEffect(() => {
     if (editor) {
-      monaco.editor.setModelLanguage(editor.getModel()!, getLanguageFromExtension(language))
+      monaco.editor.setModelLanguage(
+        editor.getModel()!,
+        getLanguageFromExtension(language),
+      );
     }
-  }, [language, editor])
+  }, [language, editor]);
 
-  // Handle content changes
   useEffect(() => {
     if (editor && onChange) {
       const disposable = editor.onDidChangeModelContent(() => {
-        onChange(editor.getValue())
-      })
+        onChange(editor.getValue());
+      });
 
       return () => {
-        disposable.dispose()
-      }
+        disposable.dispose();
+      };
     }
-  }, [editor, onChange])
+  }, [editor, onChange]);
 
   return (
-    <div ref={editorRef} className={cn("h-full w-full border border-border rounded-md overflow-hidden", className)} />
-  )
+    <div
+      ref={editorRef}
+      className={cn(
+        "h-full w-full border border-border rounded-md overflow-hidden",
+        className,
+      )}
+    />
+  );
 }
 
-// Helper function to determine Monaco language from file extension
 function getLanguageFromExtension(extension: string): string {
   const languageMap: Record<string, string> = {
     js: "javascript",
@@ -106,7 +116,7 @@ function getLanguageFromExtension(extension: string): string {
     yml: "yaml",
     yaml: "yaml",
     xml: "xml",
-  }
+  };
 
-  return languageMap[extension.toLowerCase()] || "plaintext"
+  return languageMap[extension.toLowerCase()] || "plaintext";
 }

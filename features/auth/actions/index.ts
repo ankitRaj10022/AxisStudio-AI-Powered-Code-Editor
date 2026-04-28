@@ -2,6 +2,8 @@
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { logDatabaseError } from "@/lib/database-error";
+import { isDynamicServerError } from "next/dist/client/components/hooks-server-context";
 
 
 export const getUserById = async (id:string)=>{
@@ -12,7 +14,7 @@ export const getUserById = async (id:string)=>{
         })
         return user
     } catch (error) {
-        console.log(error)
+        logDatabaseError("getUserById", error)
         return null
     }
 }
@@ -26,12 +28,20 @@ export const getAccountByUserId = async (userId:string)=>{
         })
         return account
     } catch (error) {
-        console.log(error)
+        logDatabaseError("getAccountByUserId", error)
         return null
     }
 }
 
 export const currentUser = async()=>{
-    const user = await auth()
-    return user?.user;
+    try {
+        const user = await auth()
+        return user?.user;
+    } catch (error) {
+        if (isDynamicServerError(error)) {
+            throw error
+        }
+        logDatabaseError("currentUser", error)
+        return null
+    }
 }

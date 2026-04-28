@@ -1,40 +1,42 @@
 import { Button } from "@/components/ui/button"
-import { ArrowDown } from "lucide-react"
+import { ArrowUpRight, Github } from "lucide-react"
+import { axisAssets } from "@/lib/axis-assets";
 import Image from "next/image"
+import { motion } from "motion/react";
 
 const AddRepo = () => {
   return (
-    <div
-      className="group px-6 py-6 flex flex-row justify-between items-center border rounded-lg bg-muted cursor-pointer 
-      transition-all duration-300 ease-in-out
-      hover:bg-background hover:border-[#E93F3F] hover:scale-[1.02]
-      shadow-[0_2px_10px_rgba(0,0,0,0.08)]
-      hover:shadow-[0_10px_30px_rgba(233,63,63,0.15)]"
+    <motion.div
+      whileHover={{ y: -6, scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 220, damping: 22 }}
+      className="axis-panel group flex items-center justify-between gap-5 overflow-hidden rounded-[1.8rem] px-6 py-6"
     >
-      <div className="flex flex-row justify-center items-start gap-4">
+      <div className="flex flex-row items-start gap-4">
         <Button
           variant={"outline"}
-          className="flex justify-center items-center bg-white group-hover:bg-[#fff8f8] group-hover:border-[#E93F3F] group-hover:text-[#E93F3F] transition-colors duration-300"
+          className="flex items-center justify-center rounded-2xl border-zinc-800/10 bg-zinc-950 text-white transition-colors duration-300 group-hover:bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-950 dark:group-hover:bg-white"
           size={"icon"}
         >
-          <ArrowDown size={30} className="transition-transform duration-300 group-hover:translate-y-1" />
+          <Github size={30} className="transition-transform duration-300 group-hover:rotate-6" />
         </Button>
-        <div className="flex flex-col">
-          <h1 className="text-xl font-bold text-[#e93f3f]">Open Github Repository</h1>
-          <p className="text-sm text-muted-foreground max-w-[220px]">Work with your repositories in our editor</p>
+        <div className="flex max-w-xs flex-col">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Connect</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Open a GitHub repository</h1>
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">Bring an existing codebase into the same browser workflow. Repository import is next in line.</p>
         </div>
       </div>
 
-      <div className="relative overflow-hidden">
+      <div className="relative hidden overflow-hidden sm:block">
         <Image
-          src={"/github.svg"}
+          src={axisAssets.illustrations.repositoryConnect}
           alt="Open GitHub repository"
-          width={150}
-          height={150}
+          width={164}
+          height={164}
           className="transition-transform duration-300 group-hover:scale-110"
         />
+        <ArrowUpRight className="absolute bottom-2 right-2 h-6 w-6 text-primary transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
       </div>
-    </div>
+    </motion.div>
   )
 }
 

@@ -35,6 +35,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { axisAssets } from "@/lib/axis-assets"
 import Image from "next/image"
 
 // Define the interface for a single playground item, icon is now a string
@@ -59,19 +60,26 @@ const lucideIconMap: Record<string, LucideIcon> = {
 
 export function DashboardSidebar({ initialPlaygroundData }: { initialPlaygroundData: PlaygroundData[] }) {
   const pathname = usePathname()
-  const [starredPlaygrounds, setStarredPlaygrounds] = useState(initialPlaygroundData.filter((p) => p.starred))
-  const [recentPlaygrounds, setRecentPlaygrounds] = useState(initialPlaygroundData)
+  const [starredPlaygrounds] = useState(initialPlaygroundData.filter((p) => p.starred))
+  const [recentPlaygrounds] = useState(initialPlaygroundData)
 
   return (
-    <Sidebar variant="inset" collapsible="icon" className="border-1 border-r">
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-4 py-3 justify-center">
-          <Image src={"/logo.svg"} alt="logo" height={60} width={60} />
+    <Sidebar variant="inset" collapsible="icon" className="border-0">
+      <SidebarHeader className="border-b border-sidebar-border/70 px-3 pb-4 pt-4">
+        <div className="flex items-center gap-3 rounded-[1.5rem] bg-sidebar-accent/60 px-3 py-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 via-orange-500 to-amber-300 shadow-[0_18px_40px_rgba(244,63,94,0.24)]">
+            <Image src={axisAssets.brand.logoMark} alt="logo" height={22} width={22} />
+          </div>
+          <div className="group-data-[collapsible=icon]:hidden">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sidebar-foreground/65">
+              Browser IDE
+            </p>
+            <p className="text-base font-semibold text-sidebar-foreground">axisStudio</p>
+          </div>
         </div>
-       
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
+        <SidebarGroup className="px-3 pt-3">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={pathname === "/"} tooltip="Home">
@@ -93,7 +101,7 @@ export function DashboardSidebar({ initialPlaygroundData }: { initialPlaygroundD
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
+        <SidebarGroup className="px-3">
           <SidebarGroupLabel>
             <Star className="h-4 w-4 mr-2" />
             Starred
@@ -129,7 +137,7 @@ export function DashboardSidebar({ initialPlaygroundData }: { initialPlaygroundD
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
+        <SidebarGroup className="px-3 pb-4">
           <SidebarGroupLabel>
             <History className="h-4 w-4 mr-2" />
             Recent

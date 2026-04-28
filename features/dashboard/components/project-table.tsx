@@ -5,14 +5,6 @@ import { format } from "date-fns";
 import type { Project } from "../types";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -43,14 +35,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { useState } from "react";
+import { motion } from "motion/react";
 import {
-  MoreHorizontal,
-  Edit3,
-  Trash2,
-  ExternalLink,
+  CalendarDays,
   Copy,
   Download,
+  Edit3,
+  ExternalLink,
   Eye,
+  MoreHorizontal,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MarkedToggleButton } from "./toggle-star";
@@ -60,10 +54,9 @@ interface ProjectTableProps {
   onUpdateProject?: (
     id: string,
     data: { title: string; description: string }
-  ) => Promise<void>;
+  ) => Promise<unknown>;
   onDeleteProject?: (id: string) => Promise<void>;
-  onDuplicateProject?: (id: string) => Promise<void>;
-  onMarkasFavorite?: (id: string) => Promise<void>;
+  onDuplicateProject?: (id: string) => Promise<unknown>;
 }
 
 interface EditProjectData {
@@ -76,7 +69,6 @@ export default function ProjectTable({
   onUpdateProject,
   onDeleteProject,
   onDuplicateProject,
-  onMarkasFavorite,
 }: ProjectTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -86,7 +78,6 @@ export default function ProjectTable({
     description: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [favoutrie, setFavourite] = useState(false);
 
   const handleEditClick = (project: Project) => {
     setSelectedProject(project);
@@ -115,21 +106,6 @@ export default function ProjectTable({
     } catch (error) {
       toast.error("Failed to update project");
       console.error("Error updating project:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleMarkasFavorite = async (project: Project) => {
-    if (!onMarkasFavorite) return;
-
-    setIsLoading(true);
-    try {
-      await onMarkasFavorite(project.id);
-      toast.success("Project marked as favorite successfully");
-    } catch (error) {
-      toast.error("Failed to mark project as favorite");
-      console.error("Error marking project as favorite:", error);
     } finally {
       setIsLoading(false);
     }
@@ -175,129 +151,150 @@ export default function ProjectTable({
 
   return (
     <>
-      <div className="border rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Project</TableHead>
-              <TableHead>Template</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>User</TableHead>
-              <TableHead className="w-[50px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {projects.map((project) => (
-              <TableRow key={project.id}>
-                <TableCell className="font-medium">
-                  <div className="flex flex-col">
-                    <Link
-                      href={`/playground/${project.id}`}
-                      className="hover:underline"
-                    >
-                      <span className="font-semibold">{project.title}</span>
-                    </Link>
-                    <span className="text-sm text-gray-500 line-clamp-1">
-                      {project.description}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
+      <div className="axis-panel rounded-[2rem] p-6 sm:p-8">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+              Project library
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
+              Recent playgrounds
+            </h2>
+            <p className="mt-2 text-sm leading-7 text-muted-foreground">
+              Reopen sessions, duplicate experiments, or promote the best ones to your starred stack.
+            </p>
+          </div>
+
+          <div className="axis-chip rounded-full px-4 py-2 text-sm font-medium text-muted-foreground">
+            {projects.length} active project{projects.length === 1 ? "" : "s"}
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {projects.map((project, index) => (
+            <motion.article
+              key={project.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.04, duration: 0.35 }}
+              whileHover={{ y: -6 }}
+              className="group rounded-[1.7rem] border border-border/70 bg-background/65 p-5 shadow-[0_12px_36px_rgba(15,23,42,0.06)]"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-3">
                   <Badge
                     variant="outline"
-                    className="bg-[#E93F3F15] text-[#E93F3F] border-[#E93F3F]"
+                    className="rounded-full border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary"
                   >
                     {project.template}
                   </Badge>
-                </TableCell>
-                <TableCell>
-                  {format(new Date(project.createdAt), "MMM d, yyyy")}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full overflow-hidden">
-                      <Image
-                        src={project.user.image || "/placeholder.svg"}
-                        alt={project.user.name}
-                        width={32}
-                        height={32}
-                        className="object-cover"
-                      />
-                    </div>
-                    <span className="text-sm">{project.user.name}</span>
+                  <Link
+                    href={`/playground/${project.id}`}
+                    className="block text-xl font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
+                  >
+                    {project.title}
+                  </Link>
+                </div>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 rounded-full border border-border/70 bg-background/70"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">Open menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href={`/playground/${project.id}`}
+                        className="flex items-center"
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        Open Project
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href={`/playground/${project.id}`}
+                        target="_blank"
+                        className="flex items-center"
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Open in New Tab
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleEditClick(project)}>
+                      <Edit3 className="mr-2 h-4 w-4" />
+                      Edit Project
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleDuplicateProject(project)}
+                    >
+                      <Copy className="mr-2 h-4 w-4" />
+                      Duplicate
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => copyProjectUrl(project.id)}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Copy URL
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleDeleteClick(project)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Project
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <p className="mt-4 line-clamp-2 text-sm leading-7 text-muted-foreground">
+                {project.description || "Untitled playground ready for the next iteration."}
+              </p>
+
+              <div className="mt-5 flex items-center gap-3 text-sm text-muted-foreground">
+                <CalendarDays className="h-4 w-4" />
+                <span>{format(new Date(project.createdAt), "MMM d, yyyy")}</span>
+              </div>
+
+              <div className="mt-6 flex items-center justify-between gap-3 border-t border-border/70 pt-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 overflow-hidden rounded-full border border-border/70">
+                    <Image
+                      src={project.user.image || "/placeholder.svg"}
+                      alt={project.user.name || "User avatar"}
+                      width={40}
+                      height={40}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem asChild>
-                        <MarkedToggleButton
-                          markedForRevision={project.Starmark[0]?.isMarked}
-                          id={project.id}
-                        />
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href={`/playground/${project.id}`}
-                          className="flex items-center"
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          Open Project
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href={`/playground/${project.id}`}
-                          target="_blank"
-                          className="flex items-center"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Open in New Tab
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => handleEditClick(project)}
-                      >
-                        <Edit3 className="h-4 w-4 mr-2" />
-                        Edit Project
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleDuplicateProject(project)}
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Duplicate
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => copyProjectUrl(project.id)}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Copy URL
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteClick(project)}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Project
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {project.user.name || "Unnamed user"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {project.user.email}
+                    </p>
+                  </div>
+                </div>
+
+                <MarkedToggleButton
+                  markedForRevision={project.Starmark[0]?.isMarked}
+                  id={project.id}
+                  className="w-auto rounded-full border border-border/70 bg-background/60 px-3"
+                />
+              </div>
+            </motion.article>
+          ))}
+        </div>
       </div>
 
-      {/* Edit Project Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -355,7 +352,6 @@ export default function ProjectTable({
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

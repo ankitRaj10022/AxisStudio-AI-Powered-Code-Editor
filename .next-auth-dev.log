@@ -1,0 +1,15 @@
+
+> axisstudio@0.1.0 dev
+> next dev --port 3013
+
+   ▲ Next.js 15.5.15
+   - Local:        http://localhost:3013
+   - Network:      http://10.95.165.206:3013
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 2.4s
+ ✓ Compiled /middleware in 222ms (250 modules)
+ ○ Compiling /auth/sign-in ...
+ ✓ Compiled /auth/sign-in in 1085ms (1661 modules)
+ GET /auth/sign-in 200 in 1577ms

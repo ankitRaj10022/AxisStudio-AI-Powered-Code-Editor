@@ -1,3 +1,4 @@
+import { AxisMotionGraphics } from "@/components/motion/axis-motion-graphics"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { DashboardSidebar } from "@/features/dashboard/dashboard-sidebar"
 import { getAllPlaygroundForUser } from "@/features/playground/actions"
@@ -31,10 +32,13 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full overflow-x-hidden">
+      <div className="axis-shell flex min-h-screen w-full overflow-x-hidden">
+        <AxisMotionGraphics variant="dashboard" className="fixed inset-0" />
         {/* Pass the formatted data with string icon names */}
-        <DashboardSidebar initialPlaygroundData={formattedPlaygroundData} />
-        <main className="flex-1">{children}</main>
+        <div className="relative z-10 flex min-h-screen w-full overflow-x-hidden">
+          <DashboardSidebar initialPlaygroundData={formattedPlaygroundData} />
+          <main className="relative flex-1">{children}</main>
+        </div>
       </div>
     </SidebarProvider>
   )

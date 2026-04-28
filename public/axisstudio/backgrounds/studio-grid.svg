@@ -1,0 +1,70 @@
+<svg width="1440" height="1024" viewBox="0 0 1440 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1440" height="1024" fill="transparent"/>
+  <g opacity="0.28">
+    <path d="M0.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M48.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M96.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M144.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M192.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M240.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M288.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M336.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M384.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M432.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M480.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M528.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M576.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M624.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M672.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M720.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M768.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M816.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M864.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M912.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M960.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M1008.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M1056.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M1104.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M1152.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M1200.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M1248.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M1296.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M1344.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M1392.5 0V1024" stroke="#A8A29E" stroke-opacity="0.22"/>
+  </g>
+  <g opacity="0.24">
+    <path d="M0 0.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 48.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 96.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 144.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 192.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 240.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 288.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 336.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 384.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 432.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 480.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 528.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 576.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 624.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 672.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 720.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 768.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 816.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 864.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 912.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+    <path d="M0 960.5H1440" stroke="#A8A29E" stroke-opacity="0.22"/>
+  </g>
+  <circle cx="166" cy="154" r="168" fill="url(#glowA)" fill-opacity="0.85"/>
+  <circle cx="1182" cy="128" r="190" fill="url(#glowB)" fill-opacity="0.85"/>
+  <defs>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(166 154) rotate(90) scale(168)">
+      <stop stop-color="#FB7185" stop-opacity="0.44"/>
+      <stop offset="1" stop-color="#FB7185" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1182 128) rotate(90) scale(190)">
+      <stop stop-color="#F59E0B" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#F59E0B" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>
