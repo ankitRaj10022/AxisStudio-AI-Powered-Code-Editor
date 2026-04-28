@@ -264,24 +264,25 @@ export const configureMonaco = (monaco: Monaco) => {
 
 export const defaultEditorOptions = {
   // Font settings
-  fontSize: 14,
-  fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, 'Liberation Mono', Menlo, Courier, monospace",
+  fontSize: 13,
+  fontFamily: "'JetBrains Mono', 'IBM Plex Mono', 'Fira Code', 'SF Mono', Consolas, 'Liberation Mono', Menlo, Courier, monospace",
   fontLigatures: true,
   fontWeight: "400",
   
   // Layout
   minimap: { 
     enabled: true,
-    size: "proportional",
+    size: "fill",
     showSlider: "mouseover"
   },
   scrollBeyondLastLine: false,
   automaticLayout: true,
-  padding: { top: 16, bottom: 16 },
+  padding: { top: 12, bottom: 16 },
   
   // Line settings
   lineNumbers: "on",
-  lineHeight: 20,
+  lineHeight: 22,
+  lineNumbersMinChars: 3,
   renderLineHighlight: "all",
   renderWhitespace: "selection",
   
@@ -291,7 +292,7 @@ export const defaultEditorOptions = {
   detectIndentation: true,
   
   // Word wrapping
-  wordWrap: "on",
+  wordWrap: "off",
   wordWrapColumn: 120,
   wrappingIndent: "indent",
   
@@ -335,7 +336,7 @@ export const defaultEditorOptions = {
   // Guides
   renderIndentGuides: true,
   highlightActiveIndentGuide: true,
-  rulers: [80, 120],
+  rulers: [100],
   
   // Performance
   disableLayerHinting: false,

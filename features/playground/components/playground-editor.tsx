@@ -530,19 +530,17 @@ export const PlaygroundEditor = ({
   }, []);
 
   return (
-    <div className="h-full relative">
-      {/* Loading indicator */}
+    <div className="relative h-full bg-[#0f1117]">
       {suggestionLoading && (
-        <div className="absolute top-2 right-2 z-10 bg-red-100 dark:bg-red-900 px-2 py-1 rounded text-xs text-red-700 dark:text-red-300 flex items-center gap-1">
-          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+        <div className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-full border border-orange-400/20 bg-[#161b22] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-orange-200 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
+          <div className="h-2 w-2 animate-pulse rounded-full bg-orange-400"></div>
           AI thinking...
         </div>
       )}
 
-      {/* Active suggestion indicator */}
       {currentSuggestionRef.current && !suggestionLoading && (
-        <div className="absolute top-2 right-2 z-10 bg-green-100 dark:bg-green-900 px-2 py-1 rounded text-xs text-green-700 dark:text-green-300 flex items-center gap-1">
-          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+        <div className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-full border border-emerald-400/20 bg-[#161b22] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-emerald-200 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
+          <div className="h-2 w-2 rounded-full bg-emerald-400"></div>
           Press Tab to accept
         </div>
       )}

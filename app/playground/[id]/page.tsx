@@ -7,12 +7,19 @@ import { toast } from "sonner";
 import {
   AlertCircle,
   Bot,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  FileCode2,
   FileText,
   FolderOpen,
+  GitBranch,
   MonitorPlay,
   Save,
-  Settings,
+  Settings2,
   Sparkles,
+  TerminalSquare,
+  Workflow,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -174,6 +181,13 @@ const MainPlaygroundPage: React.FC = () => {
 
   const activeFile = openFiles.find((file) => file.id === activeFileId);
   const hasUnsavedChanges = openFiles.some((file) => file.hasUnsavedChanges);
+  const activeFileLabel = activeFile
+    ? `${activeFile.filename}.${activeFile.fileExtension}`
+    : "No file selected";
+  const workspaceRootName = templateData?.folderName || "workspace";
+  const editorLanguageLabel = activeFile?.fileExtension
+    ? activeFile.fileExtension.toUpperCase()
+    : "TEXT";
 
   const handleFileSelect = (file: TemplateFile) => {
     openFile(file);
@@ -366,15 +380,15 @@ const MainPlaygroundPage: React.FC = () => {
 
   return (
     <TooltipProvider>
-      <div className="axis-shell flex min-h-screen w-full">
-        <div className="axis-spotlight left-[-8rem] top-24 h-80 w-80 bg-rose-500/20" />
-        <div className="axis-spotlight bottom-[-4rem] right-[12%] h-80 w-80 bg-orange-300/20" />
+      <div className="axis-shell flex h-full min-h-0 w-full overflow-hidden text-zinc-200">
+        <div className="axis-spotlight left-[-8rem] top-24 h-80 w-80 bg-rose-500/12" />
+        <div className="axis-spotlight bottom-[-4rem] right-[12%] h-80 w-80 bg-orange-300/12" />
 
         <TemplateFileTree
           data={templateData}
           onFileSelect={handleFileSelect}
           selectedFile={activeFile}
-          title="File Explorer"
+          title="Explorer"
           onAddFile={wrappedHandleAddFile}
           onAddFolder={wrappedHandleAddFolder}
           onDeleteFile={wrappedHandleDeleteFile}
@@ -383,48 +397,68 @@ const MainPlaygroundPage: React.FC = () => {
           onRenameFolder={wrappedHandleRenameFolder}
         />
 
-        <SidebarInset className="bg-transparent">
-          <div className="flex h-screen flex-col p-3 sm:p-4">
+        <SidebarInset className="min-h-0 overflow-hidden bg-transparent">
+          <div className="flex h-full min-h-0 flex-col gap-2 p-2 sm:p-3">
             <motion.header
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              className="axis-panel mb-3 rounded-[1.8rem] px-4 py-4 sm:px-5"
+              className="overflow-hidden rounded-[1rem] border border-white/8 bg-[#171a21]/95 shadow-[0_24px_80px_rgba(0,0,0,0.3)] backdrop-blur"
             >
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                <div className="flex items-start gap-3">
-                  <SidebarTrigger className="-ml-1 mt-1 rounded-full border border-border/70 bg-background/60" />
-                  <Separator orientation="vertical" className="hidden h-8 xl:block" />
-
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="axis-chip inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                        <Sparkles className="h-3.5 w-3.5" />
-                        axisStudio playground
-                      </span>
-                      <span className="axis-chip rounded-full px-3 py-1 text-xs text-muted-foreground">
-                        {openFiles.length} open file
-                        {openFiles.length === 1 ? "" : "s"}
-                      </span>
-                      <span className="axis-chip inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-muted-foreground">
-                        <MonitorPlay className="h-3.5 w-3.5" />
-                        {isPreviewVisible ? "Preview visible" : "Preview hidden"}
-                      </span>
-                    </div>
-
-                    <div>
-                      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                        {playgroundData?.name || "Code Playground"}
-                      </h1>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {activeFile
-                          ? `Editing ${activeFile.filename}.${activeFile.fileExtension}`
-                          : "Select a file to begin editing"}
-                        {hasUnsavedChanges
-                          ? " - Unsaved changes"
-                          : " - All changes synced"}
-                      </p>
-                    </div>
+              <div className="flex h-11 items-center justify-between border-b border-white/8 px-3">
+                <div className="flex items-center gap-3">
+                  <SidebarTrigger className="h-8 w-8 rounded-md border border-white/8 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white" />
+                  <Separator
+                    orientation="vertical"
+                    className="hidden h-5 bg-white/8 sm:block"
+                  />
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="font-semibold text-zinc-100">axisStudio</span>
+                    <span className="text-zinc-600">+</span>
+                    <span className="text-zinc-400">
+                      {playgroundData?.name || "playground"}
+                    </span>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-zinc-500">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-white/8 bg-white/5 px-2 py-1">
+                    <GitBranch className="h-3.5 w-3.5" />
+                    main
+                  </span>
+                  <span className="hidden rounded-md border border-white/8 bg-white/5 px-2 py-1 sm:inline-flex">
+                    {workspaceRootName}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 px-3 py-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-400/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-200">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Playground session
+                    </span>
+                    <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-zinc-400">
+                      <Workflow className="h-3.5 w-3.5" />
+                      {openFiles.length} tab{openFiles.length === 1 ? "" : "s"}
+                    </span>
+                    <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-zinc-400">
+                      <MonitorPlay className="h-3.5 w-3.5" />
+                      {isPreviewVisible ? "Preview visible" : "Preview hidden"}
+                    </span>
+                  </div>
+
+                  <h1 className="truncate text-xl font-semibold tracking-tight text-zinc-50 sm:text-2xl">
+                    {playgroundData?.name || "Code Playground"}
+                  </h1>
+                  <p className="mt-1 text-sm text-zinc-400">
+                    {activeFile
+                      ? `Editing ${activeFileLabel}`
+                      : "Open a file from the explorer to start editing."}
+                    {hasUnsavedChanges
+                      ? " Unsaved changes pending."
+                      : " Workspace changes are synced."}
+                  </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -435,12 +469,12 @@ const MainPlaygroundPage: React.FC = () => {
                         variant="outline"
                         onClick={() => handleSave()}
                         disabled={!activeFile || !activeFile.hasUnsavedChanges}
-                        className="rounded-full border-border/70 bg-background/70"
+                        className="rounded-md border-white/8 bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-white"
                       >
                         <Save className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Save (Ctrl+S)</TooltipContent>
+                    <TooltipContent>Save active file</TooltipContent>
                   </Tooltip>
 
                   <Tooltip>
@@ -450,13 +484,13 @@ const MainPlaygroundPage: React.FC = () => {
                         variant="outline"
                         onClick={handleSaveAll}
                         disabled={!hasUnsavedChanges}
-                        className="rounded-full border-border/70 bg-background/70"
+                        className="rounded-md border-white/8 bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-white"
                       >
                         <Save className="mr-2 h-4 w-4" />
                         Save all
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Save all open files</TooltipContent>
+                    <TooltipContent>Save every open file</TooltipContent>
                   </Tooltip>
 
                   <ToggleAI
@@ -470,15 +504,23 @@ const MainPlaygroundPage: React.FC = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="rounded-full border-border/70 bg-background/70"
+                        className="rounded-md border-white/8 bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-white"
                       >
-                        <Settings className="h-4 w-4" />
+                        <Settings2 className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent
+                      align="end"
+                      className="border-white/8 bg-[#171a21] text-zinc-200"
+                    >
                       <DropdownMenuItem
                         onClick={() => setIsPreviewVisible(!isPreviewVisible)}
                       >
+                        {isPreviewVisible ? (
+                          <EyeOff className="mr-2 h-4 w-4" />
+                        ) : (
+                          <Eye className="mr-2 h-4 w-4" />
+                        )}
                         {isPreviewVisible ? "Hide" : "Show"} Preview
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -491,72 +533,96 @@ const MainPlaygroundPage: React.FC = () => {
               </div>
             </motion.header>
 
-            <div className="min-h-0 flex-1">
-              {openFiles.length > 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="axis-panel flex h-full flex-col overflow-hidden rounded-[1.8rem]"
-                >
-                  <div className="border-b border-border/70 bg-background/50">
-                    <Tabs
-                      value={activeFileId || ""}
-                      onValueChange={setActiveFileId}
-                    >
-                      <div className="flex items-center justify-between gap-3 px-4 py-3">
-                        <TabsList className="h-9 max-w-full overflow-x-auto bg-transparent p-0">
-                          {openFiles.map((file) => (
-                            <TabsTrigger
-                              key={file.id}
-                              value={file.id}
-                              className="group relative h-9 rounded-full border border-transparent px-3 data-[state=active]:border-border/70 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                            >
-                              <div className="flex items-center gap-2">
-                                <FileText className="h-3 w-3" />
-                                <span>
-                                  {file.filename}.{file.fileExtension}
-                                </span>
-                                {file.hasUnsavedChanges && (
-                                  <span className="h-2 w-2 rounded-full bg-orange-500" />
-                                )}
-                                <span
-                                  className="ml-2 flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground"
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    closeFile(file.id);
-                                  }}
-                                >
-                                  <X className="h-3 w-3" />
-                                </span>
-                              </div>
-                            </TabsTrigger>
-                          ))}
-                        </TabsList>
-
-                        {openFiles.length > 1 && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={closeAllFiles}
-                            className="rounded-full text-xs"
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="min-h-0 flex-1 overflow-hidden rounded-[1rem] border border-white/8 bg-[#111318]/96 shadow-[0_24px_80px_rgba(0,0,0,0.34)] backdrop-blur"
+            >
+              <Tabs value={activeFileId || ""} onValueChange={setActiveFileId}>
+                <div className="flex h-10 items-center justify-between border-b border-white/8 bg-[#141820]">
+                  <TabsList className="h-full max-w-full gap-0 overflow-x-auto rounded-none bg-transparent p-0">
+                    {openFiles.map((file) => (
+                      <TabsTrigger
+                        key={file.id}
+                        value={file.id}
+                        className="group relative h-10 rounded-none border-r border-white/8 px-4 text-xs font-medium text-zinc-400 data-[state=active]:bg-[#1a1f29] data-[state=active]:text-zinc-100 data-[state=active]:shadow-none"
+                      >
+                        <div className="flex items-center gap-2">
+                          <FileCode2 className="h-3.5 w-3.5" />
+                          <span>{file.filename}.{file.fileExtension}</span>
+                          {file.hasUnsavedChanges ? (
+                            <span className="h-2 w-2 rounded-full bg-orange-400" />
+                          ) : null}
+                          <span
+                            className="ml-1 flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white/10"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              closeFile(file.id);
+                            }}
                           >
-                            Close All
-                          </Button>
-                        )}
-                      </div>
-                    </Tabs>
+                            <X className="h-3 w-3" />
+                          </span>
+                        </div>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  <div className="flex items-center gap-2 px-3 text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+                    <span className="hidden sm:inline">{workspaceRootName}</span>
+                    {openFiles.length > 1 ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={closeAllFiles}
+                        className="h-7 rounded-md px-2 text-[11px] uppercase tracking-[0.18em] text-zinc-500 hover:bg-white/8 hover:text-zinc-100"
+                      >
+                        Close all
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              </Tabs>
+
+              <div className="min-h-0 flex h-[calc(100%-40px)] flex-col">
+                <div className="flex h-10 items-center justify-between border-b border-white/8 bg-[#11151d] px-3 text-sm">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <FileText className="h-4 w-4 shrink-0 text-zinc-500" />
+                    <span className="truncate text-zinc-200">{activeFileLabel}</span>
+                    {activeFile ? (
+                      <span className="hidden rounded-md border border-white/8 bg-white/5 px-2 py-0.5 text-[11px] uppercase tracking-[0.16em] text-zinc-500 sm:inline-flex">
+                        {editorLanguageLabel}
+                      </span>
+                    ) : null}
+                    {hasUnsavedChanges ? (
+                      <span className="hidden items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-orange-300 sm:inline-flex">
+                        <span className="h-2 w-2 rounded-full bg-orange-400" />
+                        Dirty
+                      </span>
+                    ) : (
+                      <span className="hidden items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-emerald-300 sm:inline-flex">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Synced
+                      </span>
+                    )}
                   </div>
 
-                  <div className="min-h-0 flex-1">
-                    <ResizablePanelGroup
-                      direction="horizontal"
-                      className="h-full"
-                    >
-                      <ResizablePanel defaultSize={isPreviewVisible ? 50 : 100}>
-                        <div className="h-full bg-background/45">
+                  <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.16em] text-zinc-500">
+                    <span className="hidden sm:inline">Ctrl+S save</span>
+                    <span className="inline-flex items-center gap-1">
+                      <TerminalSquare className="h-3.5 w-3.5" />
+                      {aiSuggestions.isEnabled ? "AI on" : "AI off"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="min-h-0 flex-1">
+                  <ResizablePanelGroup direction="horizontal" className="h-full">
+                    <ResizablePanel defaultSize={isPreviewVisible ? 58 : 100} minSize={42}>
+                      <div className="h-full bg-[#0f1117]">
+                        {activeFile ? (
                           <PlaygroundEditor
                             activeFile={activeFile}
-                            content={activeFile?.content || ""}
+                            content={activeFile.content || ""}
                             onContentChange={(value) =>
                               activeFileId &&
                               updateFileContent(activeFileId, value)
@@ -574,45 +640,61 @@ const MainPlaygroundPage: React.FC = () => {
                               aiSuggestions.fetchSuggestion(type, editor)
                             }
                           />
-                        </div>
-                      </ResizablePanel>
-
-                      {isPreviewVisible && (
-                        <>
-                          <ResizableHandle className="bg-border/70" />
-                          <ResizablePanel defaultSize={50}>
-                            <div className="h-full bg-background/35">
-                              <WebContainerPreview
-                                templateData={templateData}
-                                instance={instance}
-                                isLoading={containerLoading}
-                                error={containerError}
-                                serverUrl={serverUrl || ""}
-                                forceResetup={false}
-                              />
+                        ) : (
+                          <div className="flex h-full items-center justify-center bg-[#0f1117] p-8">
+                            <div className="max-w-md text-center">
+                              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/8 bg-white/5 text-orange-200">
+                                <Bot className="h-8 w-8" />
+                              </div>
+                              <h2 className="text-xl font-semibold text-zinc-100">
+                                Open a file to start editing
+                              </h2>
+                              <p className="mt-3 text-sm leading-7 text-zinc-400">
+                                Use the explorer to open source files, trigger AI suggestions,
+                                and keep the preview runtime visible while you work.
+                              </p>
                             </div>
-                          </ResizablePanel>
-                        </>
-                      )}
-                    </ResizablePanelGroup>
+                          </div>
+                        )}
+                      </div>
+                    </ResizablePanel>
+
+                    {isPreviewVisible ? (
+                      <>
+                        <ResizableHandle className="bg-white/6" />
+                        <ResizablePanel defaultSize={42} minSize={28}>
+                          <div className="h-full bg-[#0d1016] p-2">
+                            <WebContainerPreview
+                              templateData={templateData}
+                              instance={instance}
+                              isLoading={containerLoading}
+                              error={containerError}
+                              serverUrl={serverUrl || ""}
+                              forceResetup={false}
+                            />
+                          </div>
+                        </ResizablePanel>
+                      </>
+                    ) : null}
+                  </ResizablePanelGroup>
+                </div>
+
+                <div className="flex h-8 items-center justify-between border-t border-white/8 bg-[#0c0f15] px-3 text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center gap-1">
+                      <GitBranch className="h-3.5 w-3.5" />
+                      main
+                    </span>
+                    <span>{hasUnsavedChanges ? "Unsaved changes" : "Saved"}</span>
+                    <span>{aiSuggestions.isEnabled ? "AI assist enabled" : "AI assist paused"}</span>
                   </div>
-                </motion.div>
-              ) : (
-                <div className="axis-panel flex h-full flex-col items-center justify-center gap-4 rounded-[1.8rem] text-center text-muted-foreground">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-primary/10 text-primary">
-                    <Bot className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-medium text-foreground">
-                      No files open
-                    </p>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Select a file from the sidebar to start editing
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <span>{editorLanguageLabel}</span>
+                    <span>{isPreviewVisible ? "Preview docked" : "Preview closed"}</span>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            </motion.div>
           </div>
         </SidebarInset>
 

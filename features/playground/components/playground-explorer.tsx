@@ -10,7 +10,6 @@ import {
   SidebarGroup,
   SidebarGroupAction,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -24,27 +23,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import RenameFolderDialog from "./dialogs/rename-folder-dialog"
 import NewFolderDialog from "./dialogs/new-folder-dialog"
 import NewFileDialog from "./dialogs/new-file-dialog"
@@ -130,17 +109,34 @@ export function TemplateFileTree({
   }
 
   return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>{title}</SidebarGroupLabel>
+    <Sidebar
+      variant="inset"
+      collapsible="icon"
+      className="border-r border-white/8 bg-[#111318]/96"
+    >
+      <SidebarContent className="bg-transparent">
+        <SidebarGroup className="gap-0 p-0">
+          <div className="flex h-11 items-center justify-between border-b border-white/8 px-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                {title}
+              </p>
+              {isRootFolder ? (
+                <p className="mt-0.5 text-xs text-zinc-400">
+                  {(data as TemplateFolder).folderName}
+                </p>
+              ) : null}
+            </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarGroupAction>
+              <SidebarGroupAction className="top-3 right-3 rounded-md bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-100">
                 <Plus className="h-4 w-4" />
               </SidebarGroupAction>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent
+              align="end"
+              className="border-white/8 bg-[#171a21] text-zinc-200"
+            >
               <DropdownMenuItem onClick={handleAddRootFile}>
                 <FilePlus className="h-4 w-4 mr-2" />
                 New File
@@ -151,7 +147,8 @@ export function TemplateFileTree({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <SidebarGroupContent>
+          </div>
+          <SidebarGroupContent className="p-2">
             <SidebarMenu>
               {isRootFolder ? (
                 (data as TemplateFolder).items.map((child, index) => (
@@ -271,7 +268,11 @@ function TemplateNode({
     return (
       <SidebarMenuItem>
         <div className="flex items-center group">
-          <SidebarMenuButton isActive={isSelected} onClick={() => onFileSelect?.(file)} className="flex-1">
+          <SidebarMenuButton
+            isActive={isSelected}
+            onClick={() => onFileSelect?.(file)}
+            className="flex-1 rounded-md text-zinc-400 hover:bg-white/6 hover:text-zinc-100 data-[active=true]:bg-white/10 data-[active=true]:text-zinc-100"
+          >
             <File className="h-4 w-4 mr-2 shrink-0" />
             <span>{fileName}</span>
           </SidebarMenuButton>
@@ -281,12 +282,15 @@ function TemplateNode({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-6 w-6 text-zinc-500 opacity-0 transition-opacity hover:bg-white/8 hover:text-zinc-100 group-hover:opacity-100"
               >
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent
+              align="end"
+              className="border-white/8 bg-[#171a21] text-zinc-200"
+            >
               <DropdownMenuItem onClick={handleRename}>
                 <Edit3 className="h-4 w-4 mr-2" />
                 Rename
@@ -383,7 +387,7 @@ function TemplateNode({
         >
           <div className="flex items-center group">
             <CollapsibleTrigger asChild>
-              <SidebarMenuButton className="flex-1">
+              <SidebarMenuButton className="flex-1 rounded-md text-zinc-400 hover:bg-white/6 hover:text-zinc-100">
                 <ChevronRight className="transition-transform" />
                 <Folder className="h-4 w-4 mr-2 shrink-0" />
                 <span>{folderName}</span>
@@ -393,14 +397,17 @@ function TemplateNode({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <MoreHorizontal className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-zinc-500 opacity-0 transition-opacity hover:bg-white/8 hover:text-zinc-100 group-hover:opacity-100"
+              >
+                <MoreHorizontal className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="border-white/8 bg-[#171a21] text-zinc-200"
+              >
                 <DropdownMenuItem onClick={handleAddFile}>
                   <FilePlus className="h-4 w-4 mr-2" />
                   New File
@@ -478,4 +485,3 @@ function TemplateNode({
     )
   }
 }
-

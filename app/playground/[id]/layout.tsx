@@ -9,9 +9,9 @@ export default function PlaygroundLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="axis-shell min-h-screen">
+      <div className="axis-shell h-[100dvh] overflow-hidden">
         <AxisMotionGraphics variant="editor" className="fixed inset-0" />
-        <div className="relative z-10 min-h-screen">{children}</div>
+        <div className="relative z-10 h-[100dvh] overflow-hidden">{children}</div>
       </div>
     </SidebarProvider>
   );

@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { axisAssets } from "@/lib/axis-assets";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -326,6 +327,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
   const [showSettings, setShowSettings] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
   const [streamResponse, setStreamResponse] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -335,6 +337,11 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -868,7 +875,9 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
       return msg.content.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <TooltipProvider>
       <>
         {/* Backdrop */}
@@ -1404,6 +1413,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
           />
         </div>
       </>
-    </TooltipProvider>
+    </TooltipProvider>,
+    document.body
   );
 };

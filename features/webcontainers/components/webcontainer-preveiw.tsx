@@ -1,8 +1,19 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { ExternalLink, Loader2, TerminalSquare, XCircle } from "lucide-react";
+import {
+  ExternalLink,
+  Globe,
+  Loader2,
+  SquareTerminal,
+  XCircle,
+} from "lucide-react";
 import { WebContainer } from "@webcontainer/api";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import type { TemplateFolder } from "@/features/playground/libs/path-to-json";
 import { transformToWebContainerFormat } from "../hooks/transformer";
 import TerminalComponent, { type TerminalRef } from "./terminal";
@@ -17,12 +28,42 @@ interface WebContainerPreviewProps {
   forceResetup?: boolean;
 }
 
+interface RuntimeCommand {
+  command: string;
+  args: string[];
+  label: string;
+}
+
 const previewSteps = [
   "Transforming template data",
   "Mounting files",
   "Installing dependencies",
   "Starting development server",
 ];
+
+function resolveRuntimeCommand(packageJsonSource: string | null): RuntimeCommand | null {
+  if (!packageJsonSource) return null;
+
+  try {
+    const parsed = JSON.parse(packageJsonSource) as {
+      scripts?: Record<string, string>;
+    };
+
+    const scripts = parsed.scripts ?? {};
+    const preferredScripts = ["dev", "start", "preview", "serve"];
+    const scriptName = preferredScripts.find((name) => typeof scripts[name] === "string");
+
+    if (!scriptName) return null;
+
+    return {
+      command: "npm",
+      args: ["run", scriptName],
+      label: `npm run ${scriptName}`,
+    };
+  } catch {
+    return null;
+  }
+}
 
 const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
   templateData,
@@ -37,6 +78,7 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
   const [setupError, setSetupError] = useState<string | null>(null);
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [isSetupInProgress, setIsSetupInProgress] = useState(false);
+  const [runtimeCommand, setRuntimeCommand] = useState<string>("");
   const terminalRef = useRef<TerminalRef | null>(null);
 
   useEffect(() => {
@@ -45,6 +87,8 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
       setIsSetupInProgress(false);
       setPreviewUrl("");
       setCurrentStep(0);
+      setRuntimeCommand("");
+      setSetupError(null);
     }
   }, [forceResetup]);
 
@@ -55,62 +99,38 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
       try {
         setIsSetupInProgress(true);
         setSetupError(null);
-
-        try {
-          const packageJsonExists = await instance.fs.readFile(
-            "package.json",
-            "utf8",
-          );
-
-          if (packageJsonExists) {
-            terminalRef.current?.writeToTerminal?.(
-              "[info] reconnecting to active WebContainer session...\r\n",
-            );
-
-            instance.on("server-ready", (port: number, url: string) => {
-              console.log(`Reconnected to server on port ${port} at ${url}`);
-              terminalRef.current?.writeToTerminal?.(
-                `[ready] preview reconnected at ${url}\r\n`,
-              );
-              setPreviewUrl(url);
-              setIsSetupComplete(true);
-              setIsSetupInProgress(false);
-            });
-
-            setCurrentStep(4);
-            return;
-          }
-        } catch {
-          // Continue with a fresh setup if the mounted files are not present yet.
-        }
+        setPreviewUrl("");
 
         setCurrentStep(1);
-        terminalRef.current?.writeToTerminal?.(
-          "[info] transforming template data...\r\n",
-        );
+        terminalRef.current?.clearTerminal();
+        terminalRef.current?.writeToTerminal("[info] transforming template data...\r\n");
 
-        // @ts-ignore
         const files = transformToWebContainerFormat(templateData);
 
         setCurrentStep(2);
-        terminalRef.current?.writeToTerminal?.(
-          "[info] mounting files to WebContainer...\r\n",
-        );
+        terminalRef.current?.writeToTerminal("[info] mounting files to workspace...\r\n");
         await instance.mount(files);
-        terminalRef.current?.writeToTerminal?.(
-          "[done] files mounted successfully\r\n",
+        terminalRef.current?.writeToTerminal("[done] files mounted successfully\r\n");
+
+        const packageJsonSource = await instance.fs.readFile("package.json", "utf8").catch(
+          () => null,
         );
+        const nextRuntimeCommand = resolveRuntimeCommand(packageJsonSource);
+
+        if (!nextRuntimeCommand) {
+          throw new Error(
+            "No runnable package script found. Add one of: dev, start, preview, or serve.",
+          );
+        }
 
         setCurrentStep(3);
-        terminalRef.current?.writeToTerminal?.(
-          "[info] installing dependencies...\r\n",
-        );
+        terminalRef.current?.writeToTerminal("[info] installing dependencies...\r\n");
         const installProcess = await instance.spawn("npm", ["install"]);
 
         installProcess.output.pipeTo(
           new WritableStream({
             write(data) {
-              terminalRef.current?.writeToTerminal?.(data);
+              terminalRef.current?.writeToTerminal(data);
             },
           }),
         );
@@ -122,33 +142,50 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
           );
         }
 
-        terminalRef.current?.writeToTerminal?.(
-          "[done] dependencies installed successfully\r\n",
-        );
+        terminalRef.current?.writeToTerminal("[done] dependencies installed successfully\r\n");
 
         setCurrentStep(4);
-        terminalRef.current?.writeToTerminal?.(
-          "[info] starting development server...\r\n",
+        setRuntimeCommand(nextRuntimeCommand.label);
+        terminalRef.current?.writeToTerminal(
+          `[info] booting preview with "${nextRuntimeCommand.label}"...\r\n`,
         );
-        const startProcess = await instance.spawn("npm", ["run", "start"]);
 
-        instance.on("server-ready", (port: number, url: string) => {
-          console.log(`Server ready on port ${port} at ${url}`);
-          terminalRef.current?.writeToTerminal?.(
-            `[ready] preview available at ${url}\r\n`,
-          );
-          setPreviewUrl(url);
-          setIsSetupComplete(true);
-          setIsSetupInProgress(false);
+        const readyPromise = new Promise<string>((resolve) => {
+          instance.on("server-ready", (_port: number, url: string) => {
+            resolve(url);
+          });
         });
+
+        const startProcess = await instance.spawn(
+          nextRuntimeCommand.command,
+          nextRuntimeCommand.args,
+        );
 
         startProcess.output.pipeTo(
           new WritableStream({
             write(data) {
-              terminalRef.current?.writeToTerminal?.(data);
+              terminalRef.current?.writeToTerminal(data);
             },
           }),
         );
+
+        const startupResult = await Promise.race([
+          readyPromise.then((url) => ({ type: "ready" as const, url })),
+          startProcess.exit.then((code) => ({ type: "exit" as const, code })),
+        ]);
+
+        if (startupResult.type === "exit") {
+          throw new Error(
+            `Preview process exited before a server became available. Exit code: ${startupResult.code}`,
+          );
+        }
+
+        terminalRef.current?.writeToTerminal(
+          `[ready] preview available at ${startupResult.url}\r\n`,
+        );
+        setPreviewUrl(startupResult.url);
+        setIsSetupComplete(true);
+        setIsSetupInProgress(false);
       } catch (setupFailure) {
         console.error("Error setting up container:", setupFailure);
         const errorMessage =
@@ -156,9 +193,7 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
             ? setupFailure.message
             : String(setupFailure);
 
-        terminalRef.current?.writeToTerminal?.(
-          `[error] ${errorMessage}\r\n`,
-        );
+        terminalRef.current?.writeToTerminal(`[error] ${errorMessage}\r\n`);
 
         setSetupError(errorMessage);
         setIsSetupInProgress(false);
@@ -170,15 +205,20 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center p-4">
-        <div className="axis-panel max-w-md rounded-[1.8rem] p-6 text-center">
-          <Loader2 className="mx-auto h-10 w-10 animate-spin text-primary" />
-          <h3 className="mt-4 text-lg font-medium text-foreground">
-            Initializing WebContainer
-          </h3>
-          <p className="mt-2 text-sm leading-7 text-muted-foreground">
-            Setting up the environment for your project runtime.
-          </p>
+      <div className="flex h-full items-center justify-center px-6 py-8">
+        <div className="flex max-w-sm flex-col items-center gap-3 text-center text-zinc-300">
+          <Loader2 className="h-8 w-8 animate-spin text-orange-300" />
+          <div>
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
+              Runtime
+            </p>
+            <h3 className="mt-2 text-xl font-semibold text-zinc-100">
+              Initializing WebContainer
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-zinc-400">
+              Creating the browser runtime before the preview panel opens.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -186,110 +226,102 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
 
   if (error || setupError) {
     return (
-      <div className="flex h-full items-center justify-center p-4">
-        <div className="axis-panel max-w-md rounded-[1.8rem] p-6 text-red-600 dark:text-red-300">
+      <div className="flex h-full items-center justify-center p-5">
+        <div className="w-full max-w-lg rounded-2xl border border-red-500/20 bg-[#171114] p-5 text-red-100">
           <div className="mb-3 flex items-center gap-2">
-            <XCircle className="h-5 w-5" />
+            <XCircle className="h-5 w-5 text-red-400" />
             <h3 className="font-semibold">Runtime Error</h3>
           </div>
-          <p className="text-sm leading-7">{error || setupError}</p>
+          <p className="text-sm leading-7 text-red-100/85">{error || setupError}</p>
         </div>
       </div>
     );
   }
 
+  const resolvedPreviewUrl = serverUrl || previewUrl;
+
   return (
-    <div className="flex h-full w-full flex-col gap-3 p-3">
-      {!previewUrl ? (
-        <>
-          <div className="axis-panel rounded-[1.6rem]">
-            <MultiStepLoader
-              currentStep={Math.max(currentStep, 1)}
-              steps={previewSteps}
-              title="Booting preview runtime"
-              description="Mounting the project into WebContainer and waiting for the live preview to become available."
-            />
-          </div>
-
-          <div className="axis-panel flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.6rem]">
-            <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  Live terminal
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Install and boot logs stream here while the preview starts.
-                </p>
+    <ResizablePanelGroup direction="vertical" className="h-full">
+      <ResizablePanel defaultSize={resolvedPreviewUrl ? 66 : 62} minSize={38}>
+        <div className="flex h-full flex-col overflow-hidden rounded-[1rem] border border-white/8 bg-[#111318]">
+          <div className="flex h-11 items-center justify-between border-b border-white/8 bg-[#171a21] px-3">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#fb7185]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#fbbf24]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#34d399]" />
               </div>
-              <span className="axis-chip inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-muted-foreground">
-                <TerminalSquare className="h-3.5 w-3.5" />
-                boot sequence
+              <div className="flex items-center gap-2 rounded-full border border-white/8 bg-[#0f1117] px-3 py-1 text-xs text-zinc-400">
+                <Globe className="h-3.5 w-3.5" />
+                <span className="max-w-[220px] truncate">
+                  {resolvedPreviewUrl || runtimeCommand || "Waiting for preview"}
+                </span>
+              </div>
+            </div>
+
+            {resolvedPreviewUrl ? (
+              <a
+                href={resolvedPreviewUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                Open
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            ) : (
+              <span className="text-xs uppercase tracking-[0.18em] text-zinc-500">
+                Booting
               </span>
-            </div>
-            <div className="min-h-0 flex-1 p-3">
-              <TerminalComponent
-                ref={terminalRef}
-                webContainerInstance={instance}
-                theme="dark"
-                className="h-full"
-              />
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="axis-panel flex items-center justify-between rounded-[1.4rem] px-4 py-3">
-            <div>
-              <p className="text-sm font-medium text-foreground">
-                Preview ready
-              </p>
-              <p className="axis-code text-xs text-muted-foreground">
-                {serverUrl || previewUrl}
-              </p>
-            </div>
-            <a
-              href={previewUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="axis-chip inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Open in new tab
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            )}
           </div>
 
-          <div className="axis-panel min-h-0 flex-1 overflow-hidden rounded-[1.6rem] p-2">
-            <iframe
-              src={previewUrl}
-              className="h-full w-full rounded-[1.15rem] border-none bg-white"
-              title="WebContainer Preview"
+          <div className="min-h-0 flex-1 bg-[#0b0d12]">
+            {!resolvedPreviewUrl ? (
+              <div className="flex h-full items-center justify-center p-6">
+                <MultiStepLoader
+                  currentStep={Math.max(currentStep, 1)}
+                  steps={previewSteps}
+                  title="Booting preview runtime"
+                  description="Installing dependencies, choosing the right project script, and waiting for the server to announce itself."
+                  variant="editor"
+                />
+              </div>
+            ) : (
+              <iframe
+                src={resolvedPreviewUrl}
+                className="h-full w-full border-none bg-white"
+                title="WebContainer Preview"
+              />
+            )}
+          </div>
+        </div>
+      </ResizablePanel>
+
+      <ResizableHandle className="bg-white/6" />
+
+      <ResizablePanel defaultSize={34} minSize={22}>
+        <div className="flex h-full flex-col overflow-hidden rounded-[1rem] border border-white/8 bg-[#101319]">
+          <div className="flex h-11 items-center justify-between border-b border-white/8 bg-[#171a21] px-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-zinc-100">
+              <SquareTerminal className="h-4 w-4 text-orange-300" />
+              Terminal
+            </div>
+            <div className="text-xs text-zinc-500">
+              {runtimeCommand || "boot sequence"}
+            </div>
+          </div>
+          <div className="min-h-0 flex-1 p-2.5">
+            <TerminalComponent
+              ref={terminalRef}
+              webContainerInstance={instance}
+              theme="dark"
+              className="h-full border-none bg-transparent"
             />
           </div>
-
-          <div className="axis-panel h-64 overflow-hidden rounded-[1.6rem]">
-            <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  Runtime terminal
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  The live preview stays above while the shell remains
-                  available below.
-                </p>
-              </div>
-            </div>
-            <div className="h-[calc(100%-65px)] p-3">
-              <TerminalComponent
-                ref={terminalRef}
-                webContainerInstance={instance}
-                theme="dark"
-                className="h-full"
-              />
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+        </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 };
 
