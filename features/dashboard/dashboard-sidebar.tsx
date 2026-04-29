@@ -74,7 +74,13 @@ export function DashboardSidebar({ initialPlaygroundData }: { initialPlaygroundD
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sidebar-foreground/65">
               Browser IDE
             </p>
-            <p className="text-base font-semibold text-sidebar-foreground">axisStudio</p>
+            <Image
+              src={axisAssets.brand.titleWordmark}
+              alt="axisStudio"
+              width={168}
+              height={44}
+              className="mt-1 h-auto w-36"
+            />
           </div>
         </div>
       </SidebarHeader>

@@ -25,7 +25,7 @@ const datDBSa = [
       {
         "filename": "index",
         "fileExtension": "tsx",
-        "content": "import { StrictMode } from 'react';\r\nimport { createRoot } from 'react-dom/client';\r\n\r\nimport { App } from './App';\r\n\r\nconst root = createRoot(document.getElementById('app'));\r\n\r\nroot.render(\r\n  <StrictMode>\r\n    <App name=\"StackBlitz\" />\r\n  </StrictMode>\r\n);\r\n"
+        "content": "import { StrictMode } from 'react';\r\nimport { createRoot } from 'react-dom/client';\r\n\r\nimport { App } from './App';\r\n\r\nconst root = createRoot(document.getElementById('app'));\r\n\r\nroot.render(\r\n  <StrictMode>\r\n    <App name=\"AxisStudio\" />\r\n  </StrictMode>\r\n);\r\n"
       },
       {
         "filename": "style",

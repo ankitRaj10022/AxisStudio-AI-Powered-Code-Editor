@@ -2,10 +2,13 @@
 
 import React, { useRef, useState, useCallback } from "react";
 import { motion } from "motion/react";
+import Image from "next/image";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   AlertCircle,
+  ArrowLeft,
   Bot,
   CheckCircle2,
   Eye,
@@ -60,6 +63,7 @@ import { useAISuggestions } from "@/features/playground/hooks/useAISuggestion";
 import { useWebContainer } from "@/features/webcontainers/hooks/useWebContainer";
 import WebContainerPreview from "@/features/webcontainers/components/webcontainer-preveiw";
 import { findFilePath } from "@/features/playground/libs";
+import { axisAssets } from "@/lib/axis-assets";
 import { cn } from "@/lib/utils";
 
 const MainPlaygroundPage: React.FC = () => {
@@ -468,18 +472,37 @@ const MainPlaygroundPage: React.FC = () => {
             >
               <div className="flex min-h-11 flex-wrap items-center justify-between gap-2 border-b border-white/8 px-3 py-2">
                 <div className="flex min-w-0 items-center gap-3">
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="h-8 rounded-md border-white/8 bg-white/5 px-2 text-zinc-300 hover:bg-white/10 hover:text-white"
+                  >
+                    <Link href="/dashboard">
+                      <ArrowLeft className="h-4 w-4" />
+                      <span className="hidden sm:inline">Dashboard</span>
+                    </Link>
+                  </Button>
                   <SidebarTrigger className="h-8 w-8 rounded-md border border-white/8 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white" />
                   <Separator
                     orientation="vertical"
                     className="hidden h-5 bg-white/8 sm:block"
                   />
                   <div className="flex min-w-0 items-center gap-2 text-sm">
-                    <span className="shrink-0 font-semibold text-zinc-100">
-                      axisStudio
-                    </span>
-                    <span className="text-zinc-600">+</span>
-                    <span className="truncate text-zinc-400">
+                    <Image
+                      src={axisAssets.brand.titleWordmark}
+                      alt="axisStudio"
+                      width={168}
+                      height={44}
+                      className="h-auto w-28 shrink-0 sm:w-32"
+                    />
+                    <span className="hidden text-zinc-600 sm:inline">/</span>
+                    <span className="hidden rounded-md border border-white/8 bg-white/5 px-2 py-1 text-xs uppercase tracking-[0.18em] text-zinc-400 sm:inline-flex">
                       {playgroundData?.name || "playground"}
+                    </span>
+                    <span className="text-zinc-600">/</span>
+                    <span className="truncate rounded-md border border-emerald-400/15 bg-emerald-400/8 px-2 py-1 text-sm text-zinc-200">
+                      {activeFile ? activeFileLabel : "No file selected"}
                     </span>
                   </div>
                 </div>

@@ -2,21 +2,18 @@
 
 ## What is Egg.js
 
-[Egg.js](https://github.com/eggjs) is an framework for building better enterprise frameworks and apps with Node.js.
+[Egg.js](https://github.com/eggjs) is a framework for building enterprise Node.js applications.
 
-It's opensource by Alibaba, and widely used at China.
-
-just a showcase for `egg.js`, could only run at `single-mode` due to `tcp-base` is not works well with `webcontainer`.
+This starter is a small showcase for `egg.js`. It runs in `single-mode` because `tcp-base` does not behave reliably inside WebContainer-based environments.
 
 ## QuickStart
 
 ```bash
-$ npm start
+npm start
 ```
 
-## Refs:
+## Refs
 
 - [What is Egg.js](https://eggjs.org/)
 - [What is WebContainer](https://blog.stackblitz.com/posts/introducing-webcontainers/)
-- [Edit on StackBlitz ⚡️](https://stackblitz.com/edit/webcontainer-egg)
 - [GitHub](https://github.com/atian25/webcontainer-egg)

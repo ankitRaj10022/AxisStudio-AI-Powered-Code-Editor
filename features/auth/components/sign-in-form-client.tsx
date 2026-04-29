@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Chrome, Github, ShieldCheck } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { axisAssets } from "@/lib/axis-assets";
 
 const authErrorMessages: Record<string, string> = {
   Configuration:
@@ -79,8 +81,15 @@ const SignInFormClient = ({ authOrigin }: SignInFormClientProps) => {
           Secure Workspace Access
         </div>
         <div className="space-y-3">
+          <Image
+            src={axisAssets.brand.titleWordmark}
+            alt="axisStudio"
+            width={196}
+            height={52}
+            className="h-auto w-40"
+          />
           <h2 className="text-3xl font-semibold tracking-tight text-foreground">
-            Sign in to axisStudio
+            Sign in to continue
           </h2>
           <p className="text-sm leading-7 text-muted-foreground">
             Pick your preferred provider and continue into your AI-assisted browser IDE.

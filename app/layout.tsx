@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   title: "axisStudio - Browser IDE",
   description:
     "axisStudio is an AI-assisted browser IDE for building, previewing, and shipping full-stack projects with more control.",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+  },
 };
 
 export default async function RootLayout({

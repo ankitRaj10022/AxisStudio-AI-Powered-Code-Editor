@@ -24,7 +24,13 @@ export function Header() {
             <p className="text-sm font-medium uppercase tracking-[0.24em] text-muted-foreground">
               Browser IDE
             </p>
-            <p className="text-lg font-semibold text-foreground">axisStudio</p>
+            <Image
+              src={axisAssets.brand.titleWordmark}
+              alt="axisStudio"
+              width={168}
+              height={44}
+              className="mt-1 h-auto w-36"
+            />
           </div>
         </Link>
 

@@ -2,6 +2,7 @@ export const axisAssets = {
   brand: {
     logoMark: "/axisstudio/brand/logo-mark.svg",
     logoLockup: "/axisstudio/brand/logo-lockup.svg",
+    titleWordmark: "/axisstudio/brand/title-wordmark.svg",
   },
   illustrations: {
     signInStudio: "/axisstudio/illustrations/sign-in-studio.svg",
