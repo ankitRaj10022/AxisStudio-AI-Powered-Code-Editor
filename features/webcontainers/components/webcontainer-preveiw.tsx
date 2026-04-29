@@ -14,6 +14,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { TemplateFolder } from "@/features/playground/libs/path-to-json";
 import { transformToWebContainerFormat } from "../hooks/transformer";
 import TerminalComponent, { type TerminalRef } from "./terminal";
@@ -73,6 +74,7 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
   serverUrl,
   forceResetup = false,
 }) => {
+  const isMobile = useIsMobile();
   const [previewUrl, setPreviewUrl] = useState("");
   const [currentStep, setCurrentStep] = useState(0);
   const [setupError, setSetupError] = useState<string | null>(null);
@@ -239,87 +241,103 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
   }
 
   const resolvedPreviewUrl = serverUrl || previewUrl;
+  const previewPanelContent = (
+    <div className="flex h-full flex-col overflow-hidden rounded-[1rem] border border-white/8 bg-[#111318]">
+      <div className="flex min-h-11 flex-wrap items-center justify-between gap-2 border-b border-white/8 bg-[#171a21] px-3 py-2">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#fb7185]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#fbbf24]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#34d399]" />
+          </div>
+          <div className="flex min-w-0 items-center gap-2 rounded-full border border-white/8 bg-[#0f1117] px-3 py-1 text-xs text-zinc-400">
+            <Globe className="h-3.5 w-3.5 shrink-0" />
+            <span className="max-w-[140px] truncate sm:max-w-[220px]">
+              {resolvedPreviewUrl || runtimeCommand || "Waiting for preview"}
+            </span>
+          </div>
+        </div>
+
+        {resolvedPreviewUrl ? (
+          <a
+            href={resolvedPreviewUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            Open
+            <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        ) : (
+          <span className="text-xs uppercase tracking-[0.18em] text-zinc-500">
+            Booting
+          </span>
+        )}
+      </div>
+
+      <div className="min-h-0 flex-1 bg-[#0b0d12]">
+        {!resolvedPreviewUrl ? (
+          <div className="flex h-full items-center justify-center p-4 sm:p-6">
+            <MultiStepLoader
+              currentStep={Math.max(currentStep, 1)}
+              steps={previewSteps}
+              title="Booting preview runtime"
+              description="Installing dependencies, choosing the right project script, and waiting for the server to announce itself."
+              variant="editor"
+            />
+          </div>
+        ) : (
+          <iframe
+            src={resolvedPreviewUrl}
+            className="h-full w-full border-none bg-white"
+            title="WebContainer Preview"
+          />
+        )}
+      </div>
+    </div>
+  );
+
+  const terminalPanelContent = (
+    <div className="flex h-full flex-col overflow-hidden rounded-[1rem] border border-white/8 bg-[#101319]">
+      <div className="flex min-h-11 flex-wrap items-center justify-between gap-2 border-b border-white/8 bg-[#171a21] px-3 py-2">
+        <div className="flex items-center gap-2 text-sm font-medium text-zinc-100">
+          <SquareTerminal className="h-4 w-4 text-orange-300" />
+          Terminal
+        </div>
+        <div className="max-w-full truncate text-xs text-zinc-500">
+          {runtimeCommand || "boot sequence"}
+        </div>
+      </div>
+      <div className="min-h-0 flex-1 p-2.5">
+        <TerminalComponent
+          ref={terminalRef}
+          webContainerInstance={instance}
+          theme="dark"
+          className="h-full border-none bg-transparent"
+        />
+      </div>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <div className="flex h-full flex-col gap-2">
+        <div className="min-h-0 flex-[1.15]">{previewPanelContent}</div>
+        <div className="min-h-0 flex-1">{terminalPanelContent}</div>
+      </div>
+    );
+  }
 
   return (
     <ResizablePanelGroup direction="vertical" className="h-full">
       <ResizablePanel defaultSize={resolvedPreviewUrl ? 66 : 62} minSize={38}>
-        <div className="flex h-full flex-col overflow-hidden rounded-[1rem] border border-white/8 bg-[#111318]">
-          <div className="flex h-11 items-center justify-between border-b border-white/8 bg-[#171a21] px-3">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#fb7185]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#fbbf24]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#34d399]" />
-              </div>
-              <div className="flex items-center gap-2 rounded-full border border-white/8 bg-[#0f1117] px-3 py-1 text-xs text-zinc-400">
-                <Globe className="h-3.5 w-3.5" />
-                <span className="max-w-[220px] truncate">
-                  {resolvedPreviewUrl || runtimeCommand || "Waiting for preview"}
-                </span>
-              </div>
-            </div>
-
-            {resolvedPreviewUrl ? (
-              <a
-                href={resolvedPreviewUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                Open
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            ) : (
-              <span className="text-xs uppercase tracking-[0.18em] text-zinc-500">
-                Booting
-              </span>
-            )}
-          </div>
-
-          <div className="min-h-0 flex-1 bg-[#0b0d12]">
-            {!resolvedPreviewUrl ? (
-              <div className="flex h-full items-center justify-center p-6">
-                <MultiStepLoader
-                  currentStep={Math.max(currentStep, 1)}
-                  steps={previewSteps}
-                  title="Booting preview runtime"
-                  description="Installing dependencies, choosing the right project script, and waiting for the server to announce itself."
-                  variant="editor"
-                />
-              </div>
-            ) : (
-              <iframe
-                src={resolvedPreviewUrl}
-                className="h-full w-full border-none bg-white"
-                title="WebContainer Preview"
-              />
-            )}
-          </div>
-        </div>
+        {previewPanelContent}
       </ResizablePanel>
 
       <ResizableHandle className="bg-white/6" />
 
       <ResizablePanel defaultSize={34} minSize={22}>
-        <div className="flex h-full flex-col overflow-hidden rounded-[1rem] border border-white/8 bg-[#101319]">
-          <div className="flex h-11 items-center justify-between border-b border-white/8 bg-[#171a21] px-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-zinc-100">
-              <SquareTerminal className="h-4 w-4 text-orange-300" />
-              Terminal
-            </div>
-            <div className="text-xs text-zinc-500">
-              {runtimeCommand || "boot sequence"}
-            </div>
-          </div>
-          <div className="min-h-0 flex-1 p-2.5">
-            <TerminalComponent
-              ref={terminalRef}
-              webContainerInstance={instance}
-              theme="dark"
-              className="h-full border-none bg-transparent"
-            />
-          </div>
-        </div>
+        {terminalPanelContent}
       </ResizablePanel>
     </ResizablePanelGroup>
   );

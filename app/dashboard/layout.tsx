@@ -1,17 +1,16 @@
-import { AxisMotionGraphics } from "@/components/motion/axis-motion-graphics"
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { DashboardSidebar } from "@/features/dashboard/dashboard-sidebar"
-import { getAllPlaygroundForUser } from "@/features/playground/actions"
-import type React from "react"
+import { AxisMotionGraphics } from "@/components/motion/axis-motion-graphics";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardSidebar } from "@/features/dashboard/dashboard-sidebar";
+import { getAllPlaygroundForUser } from "@/features/playground/actions";
+import type React from "react";
 
 export default async function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const playgroundData = await getAllPlaygroundForUser()
+  const playgroundData = await getAllPlaygroundForUser();
 
-  // Store icon names (strings) instead of the components themselves
   const technologyIconMap: Record<string, string> = {
     REACT: "Zap",
     NEXTJS: "Lightbulb",
@@ -19,16 +18,15 @@ export default async function DashboardLayout({
     VUE: "Compass",
     HONO: "FlameIcon",
     ANGULAR: "Terminal",
-  }
+  };
 
   const formattedPlaygroundData =
     playgroundData?.map((item) => ({
       id: item.id,
       name: item.title,
       starred: item.Starmark?.[0]?.isMarked || false,
-      // Pass the icon name as a string
-      icon: technologyIconMap[item.template] || "Code2", // Default to "Code2" if template not found
-    })) || []
+      icon: technologyIconMap[item.template] || "Code2",
+    })) || [];
 
   return (
     <SidebarProvider>
@@ -41,5 +39,5 @@ export default async function DashboardLayout({
         </div>
       </div>
     </SidebarProvider>
-  )
+  );
 }

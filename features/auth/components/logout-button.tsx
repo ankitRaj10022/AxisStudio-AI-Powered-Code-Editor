@@ -4,7 +4,8 @@ import { LogoutButtonProps } from "../types";
 
 const LogoutButton = ({ children }: LogoutButtonProps) => {
   const onLogout = async () => {
-    await signOut({ redirectTo: "/auth/sign-in" });
+    await signOut({ redirect: false });
+    window.location.replace("/auth/sign-in");
   };
 
   return (

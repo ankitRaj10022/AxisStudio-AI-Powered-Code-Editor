@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import type React from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Copy,
   Check,
@@ -18,29 +18,37 @@ import {
   ImportIcon as Insert,
   ThumbsUp,
   ThumbsDown,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
-import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import {
+  vscDarkPlus,
+  vs,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 interface EnhancedCodeBlockProps {
-  children: string
-  className?: string
-  inline?: boolean
-  onInsert?: (code: string) => void
-  onRun?: (code: string, language: string) => void
-  showLineNumbers?: boolean
-  theme?: "dark" | "light"
-  maxHeight?: number
-  fileName?: string
+  children: string;
+  className?: string;
+  inline?: boolean;
+  onInsert?: (code: string) => void;
+  onRun?: (code: string, language: string) => void;
+  showLineNumbers?: boolean;
+  theme?: "dark" | "light";
+  maxHeight?: number;
+  fileName?: string;
 }
 
 export const EnhancedCodeBlock: React.FC<EnhancedCodeBlockProps> = ({
@@ -54,36 +62,36 @@ export const EnhancedCodeBlock: React.FC<EnhancedCodeBlockProps> = ({
   maxHeight = 400,
   fileName,
 }) => {
-  const [copied, setCopied] = useState(false)
-  const [collapsed, setCollapsed] = useState(false)
-  const [showNumbers, setShowNumbers] = useState(showLineNumbers)
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [feedback, setFeedback] = useState<"up" | "down" | null>(null)
+  const [copied, setCopied] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [showNumbers, setShowNumbers] = useState(showLineNumbers);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
 
-  const match = /language-(\w+)/.exec(className || "")
-  const language = match ? match[1] : "text"
+  const match = /language-(\w+)/.exec(className || "");
+  const language = match ? match[1] : "text";
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(children)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(children);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Failed to copy code: ", err)
+      console.error("Failed to copy code: ", err);
     }
-  }
+  };
 
   const downloadCode = () => {
-    const blob = new Blob([children], { type: "text/plain" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = fileName || `code.${getFileExtension(language)}`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
+    const blob = new Blob([children], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName || `code.${getFileExtension(language)}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const getFileExtension = (lang: string): string => {
     const extensions: { [key: string]: string } = {
@@ -112,9 +120,9 @@ export const EnhancedCodeBlock: React.FC<EnhancedCodeBlockProps> = ({
       powershell: "ps1",
       dockerfile: "dockerfile",
       markdown: "md",
-    }
-    return extensions[lang.toLowerCase()] || "txt"
-  }
+    };
+    return extensions[lang.toLowerCase()] || "txt";
+  };
 
   const getLanguageDisplayName = (lang: string): string => {
     const languageMap: { [key: string]: string } = {
@@ -151,34 +159,43 @@ export const EnhancedCodeBlock: React.FC<EnhancedCodeBlockProps> = ({
       md: "Markdown",
       plaintext: "Plain Text",
       text: "Plain Text",
-    }
-    return languageMap[lang.toLowerCase()] || lang.charAt(0).toUpperCase() + lang.slice(1)
-  }
+    };
+    return (
+      languageMap[lang.toLowerCase()] ||
+      lang.charAt(0).toUpperCase() + lang.slice(1)
+    );
+  };
 
   const isExecutable = (lang: string): boolean => {
-    return ["javascript", "python", "bash", "shell", "sql"].includes(lang.toLowerCase())
-  }
+    return ["javascript", "python", "bash", "shell", "sql"].includes(
+      lang.toLowerCase(),
+    );
+  };
 
   const handleFeedback = (type: "up" | "down") => {
-    setFeedback(type)
-    // Here you could send feedback to your analytics service
-    console.log(`Code block feedback: ${type}`)
-  }
+    setFeedback(type);
+    console.log(`Code block feedback: ${type}`);
+  };
 
   if (inline) {
     return (
       <code className="bg-zinc-800/60 text-zinc-200 px-1.5 py-0.5 rounded text-sm font-mono border border-zinc-700/50">
         {children}
       </code>
-    )
+    );
   }
 
-  const lineCount = children.split("\n").length
-  const shouldShowControls = lineCount > 3
+  const lineCount = children.split("\n").length;
+  const shouldShowControls = lineCount > 3;
 
   return (
     <TooltipProvider>
-      <div className={cn("relative group my-4", isFullscreen && "fixed inset-4 z-50 bg-zinc-950 rounded-lg")}>
+      <div
+        className={cn(
+          "relative group my-4",
+          isFullscreen && "fixed inset-4 z-50 bg-zinc-950 rounded-lg",
+        )}
+      >
         {/* Header with enhanced controls */}
         <div className="flex items-center justify-between bg-zinc-800/90 backdrop-blur-sm px-4 py-2.5 rounded-t-lg border border-zinc-700/50">
           <div className="flex items-center gap-3">
@@ -252,10 +269,16 @@ export const EnhancedCodeBlock: React.FC<EnhancedCodeBlockProps> = ({
                       className="h-7 w-7 p-0 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50 transition-colors"
                       onClick={() => setShowNumbers(!showNumbers)}
                     >
-                      {showNumbers ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      {showNumbers ? (
+                        <EyeOff className="h-3.5 w-3.5" />
+                      ) : (
+                        <Eye className="h-3.5 w-3.5" />
+                      )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>{showNumbers ? "Hide line numbers" : "Show line numbers"}</TooltipContent>
+                  <TooltipContent>
+                    {showNumbers ? "Hide line numbers" : "Show line numbers"}
+                  </TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
@@ -266,10 +289,16 @@ export const EnhancedCodeBlock: React.FC<EnhancedCodeBlockProps> = ({
                       className="h-7 w-7 p-0 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50 transition-colors"
                       onClick={() => setIsFullscreen(!isFullscreen)}
                     >
-                      {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+                      {isFullscreen ? (
+                        <Minimize2 className="h-3.5 w-3.5" />
+                      ) : (
+                        <Maximize2 className="h-3.5 w-3.5" />
+                      )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>{isFullscreen ? "Exit fullscreen" : "Fullscreen"}</TooltipContent>
+                  <TooltipContent>
+                    {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                  </TooltipContent>
                 </Tooltip>
 
                 {lineCount > 20 && (
@@ -284,7 +313,9 @@ export const EnhancedCodeBlock: React.FC<EnhancedCodeBlockProps> = ({
                         <MoreHorizontal className="h-3.5 w-3.5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>{collapsed ? "Expand code" : "Collapse code"}</TooltipContent>
+                    <TooltipContent>
+                      {collapsed ? "Expand code" : "Collapse code"}
+                    </TooltipContent>
                   </Tooltip>
                 )}
               </>
@@ -345,7 +376,11 @@ export const EnhancedCodeBlock: React.FC<EnhancedCodeBlockProps> = ({
                   className="h-7 w-7 p-0 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50 transition-colors"
                   onClick={copyToClipboard}
                 >
-                  {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5 text-green-400" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Copy code</TooltipContent>
@@ -370,8 +405,14 @@ export const EnhancedCodeBlock: React.FC<EnhancedCodeBlockProps> = ({
                   {showNumbers ? "Hide" : "Show"} Line Numbers
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={downloadCode}>Download as File</DropdownMenuItem>
-                {onInsert && <DropdownMenuItem onClick={() => onInsert(children)}>Insert into Editor</DropdownMenuItem>}
+                <DropdownMenuItem onClick={downloadCode}>
+                  Download as File
+                </DropdownMenuItem>
+                {onInsert && (
+                  <DropdownMenuItem onClick={() => onInsert(children)}>
+                    Insert into Editor
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -392,7 +433,11 @@ export const EnhancedCodeBlock: React.FC<EnhancedCodeBlockProps> = ({
               fontSize: "13px",
               fontFamily:
                 "'JetBrains Mono', 'Fira Code', 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace",
-              maxHeight: isFullscreen ? "calc(100vh - 120px)" : collapsed ? "200px" : `${maxHeight}px`,
+              maxHeight: isFullscreen
+                ? "calc(100vh - 120px)"
+                : collapsed
+                  ? "200px"
+                  : `${maxHeight}px`,
               overflow: "auto",
             }}
             lineNumberStyle={{
@@ -420,5 +465,5 @@ export const EnhancedCodeBlock: React.FC<EnhancedCodeBlockProps> = ({
         </div>
       </div>
     </TooltipProvider>
-  )
-}
+  );
+};

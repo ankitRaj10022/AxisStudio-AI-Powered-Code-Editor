@@ -1,8 +1,8 @@
-# 🧠 axisStudio – AI-Powered Web IDE
+# 🧠 AxisStudio – AI-Powered Web IDE
 
-![axisStudio Thumbnail](public/)
+![axisStudio Thumbnail](public/axisstudio/readme/thumbnail.svg)
 
-**axisStudio** is a blazing-fast, AI-integrated web IDE built entirely in the browser using **Next.js App Router**, **WebContainers**, **Monaco Editor**, and **local LLMs via Ollama**. It offers real-time code execution, an AI-powered chat assistant, and support for multiple tech stacks — all wrapped in a stunning developer-first UI.
+**AxisStudio** is a blazing-fast, AI-integrated web IDE built entirely in the browser using **Next.js App Router**, **WebContainers**, **Monaco Editor**, and **local LLMs via Ollama**. It offers real-time code execution, an AI-powered chat assistant, and support for multiple tech stacks — all wrapped in a stunning developer-first UI.
 
 ---
 
@@ -42,8 +42,8 @@
 ### 1. Clone the Repo
 
 ```bash
-git clone https://github.com/ankitRaj10022/axisStudio.git
-cd axisStudio
+git clone https://github.com/ankitRaj10022/AxisStudio-AI-Powered-Code-Editor.git
+cd AxisStudio-AI-Powered-Code-Editor
 ````
 
 ### 2. Install Dependencies
@@ -102,7 +102,7 @@ Visit `http://localhost:3000` in your browser.
 ├── lib/                     # Utility functions
 ├── public/                  # Static files (incl. thumbnail)
 ├── utils/                   # AI helpers, WebContainer logic
-├── .env.example             # Example env vars
+├── .env                     # Example env vars
 └── README.md
 ```
 
@@ -123,8 +123,8 @@ Visit `http://localhost:3000` in your browser.
 * [x] Monaco Editor + AI
 * [x] WebContainers + terminal
 * [x] AI chat for code assistance
-* [x] GitHub repo import/export
-* [x] Save/load playground from DB
+* [ ] GitHub repo import/export
+* [ ] Save/load playground from DB
 * [ ] Real-time collaboration
 * [ ] Plugin system for templates/tools
 * [ ] One-click deploy via Vercel/Netlify

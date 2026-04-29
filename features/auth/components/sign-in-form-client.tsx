@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Chrome, Github, ShieldCheck } from "lucide-react";
 import { signIn } from "next-auth/react";
@@ -15,9 +15,14 @@ const authErrorMessages: Record<string, string> = {
     "The sign-in link or provider verification expired. Start the sign-in flow again.",
 };
 
-const SignInFormClient = () => {
+interface SignInFormClientProps {
+  authOrigin?: string | null;
+}
+
+const SignInFormClient = ({ authOrigin }: SignInFormClientProps) => {
   const searchParams = useSearchParams();
   const [activeProvider, setActiveProvider] = useState<"google" | "github" | null>(null);
+  const [isNormalizingOrigin, setIsNormalizingOrigin] = useState(false);
 
   const authError = useMemo(() => {
     const error = searchParams.get("error");
@@ -25,14 +30,46 @@ const SignInFormClient = () => {
     return authErrorMessages[error] ?? "Sign-in failed. Please try again.";
   }, [searchParams]);
 
+  useEffect(() => {
+    if (!authOrigin || typeof window === "undefined") return;
+
+    if (window.location.origin !== authOrigin) {
+      setIsNormalizingOrigin(true);
+      const normalizedUrl = new URL(
+        `${window.location.pathname}${window.location.search}`,
+        authOrigin,
+      );
+      window.location.replace(normalizedUrl.toString());
+    }
+  }, [authOrigin]);
+
   const handleSignIn = async (provider: "google" | "github") => {
     setActiveProvider(provider);
     try {
-      await signIn(provider, { redirectTo: "/" });
+      await signIn(provider, {
+        redirectTo: authOrigin ? new URL("/", authOrigin).toString() : "/",
+      });
     } catch {
       setActiveProvider(null);
     }
   };
+
+  if (isNormalizingOrigin) {
+    return (
+      <div className="axis-panel w-full max-w-md rounded-[2rem] p-6 sm:p-8">
+        <div className="flex min-h-56 items-center justify-center text-center">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+              Syncing Auth Session
+            </p>
+            <p className="mt-3 text-sm leading-7 text-muted-foreground">
+              Redirecting to the configured sign-in origin so OAuth can complete cleanly.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="axis-panel w-full max-w-md rounded-[2rem] p-6 sm:p-8">
