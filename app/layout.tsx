@@ -20,9 +20,9 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "axisStudio - Browser IDE",
+  title: "AxisStudio - Browser IDE",
   description:
-    "axisStudio is an AI-assisted browser IDE for building, previewing, and shipping full-stack projects with more control.",
+    "AxisStudio is an AI-assisted browser IDE for building, previewing, and shipping full-stack projects with more control.",
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",
@@ -34,34 +34,34 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let session = null
+  let session = null;
   try {
-    session = await auth()
+    session = await auth();
   } catch (error) {
     if (isDynamicServerError(error)) {
-      throw error
+      throw error;
     }
-    logDatabaseError("RootLayout.auth", error)
+    logDatabaseError("RootLayout.auth", error);
   }
   return (
     <SessionProvider session={session}>
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${sans.variable} ${mono.variable} ${sans.className} antialiased`}
-      >
-        <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={`${sans.variable} ${mono.variable} ${sans.className} antialiased`}
         >
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
             <div className="flex flex-col min-h-screen">
-              <Toaster/>
+              <Toaster />
               <div className="flex-1">{children}</div>
             </div>
-        </ThemeProvider>
-      </body>
-    </html>
+          </ThemeProvider>
+        </body>
+      </html>
     </SessionProvider>
   );
 }

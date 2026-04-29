@@ -322,7 +322,7 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
   if (isMobile) {
     return (
       <div className="flex h-full flex-col gap-2">
-        <div className="min-h-0 flex-[1.15]">{previewPanelContent}</div>
+        <div className="min-h-0 flex-[1.3]">{previewPanelContent}</div>
         <div className="min-h-0 flex-1">{terminalPanelContent}</div>
       </div>
     );
@@ -330,13 +330,13 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
 
   return (
     <ResizablePanelGroup direction="vertical" className="h-full">
-      <ResizablePanel defaultSize={resolvedPreviewUrl ? 66 : 62} minSize={38}>
+      <ResizablePanel defaultSize={resolvedPreviewUrl ? 72 : 68} minSize={44}>
         {previewPanelContent}
       </ResizablePanel>
 
       <ResizableHandle className="bg-white/6" />
 
-      <ResizablePanel defaultSize={34} minSize={22}>
+      <ResizablePanel defaultSize={28} minSize={18}>
         {terminalPanelContent}
       </ResizablePanel>
     </ResizablePanelGroup>

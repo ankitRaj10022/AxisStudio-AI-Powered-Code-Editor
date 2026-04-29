@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/ui/toggle-theme";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -726,6 +727,10 @@ const MainPlaygroundPage: React.FC = () => {
 
                   <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.16em] text-zinc-500">
                     <span className="hidden sm:inline">Ctrl+S save</span>
+                    <ThemeToggle
+                      showLabel
+                      className="h-7 border-white/8 bg-white/5 px-2 text-[11px] text-zinc-400 hover:bg-white/8 hover:text-zinc-100"
+                    />
                     <span className="inline-flex items-center gap-1">
                       <TerminalSquare className="h-3.5 w-3.5" />
                       {aiSuggestions.isEnabled ? "AI on" : "AI off"}
@@ -740,8 +745,8 @@ const MainPlaygroundPage: React.FC = () => {
                       className="h-full"
                     >
                       <ResizablePanel
-                        defaultSize={isPreviewVisible ? 58 : 100}
-                        minSize={42}
+                        defaultSize={isPreviewVisible ? 64 : 100}
+                        minSize={48}
                       >
                         {editorWorkspace}
                       </ResizablePanel>
@@ -749,7 +754,7 @@ const MainPlaygroundPage: React.FC = () => {
                       {isPreviewVisible ? (
                         <>
                           <ResizableHandle className="bg-white/6" />
-                          <ResizablePanel defaultSize={42} minSize={28}>
+                          <ResizablePanel defaultSize={36} minSize={24}>
                             {previewWorkspace}
                           </ResizablePanel>
                         </>
@@ -761,7 +766,7 @@ const MainPlaygroundPage: React.FC = () => {
                     <div
                       className={cn(
                         "min-h-0",
-                        isPreviewVisible ? "flex-[1.15]" : "flex-1",
+                        isPreviewVisible ? "flex-[1.35]" : "flex-1",
                       )}
                     >
                       {editorWorkspace}

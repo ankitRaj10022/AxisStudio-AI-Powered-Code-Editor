@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ThemeToggle } from "@/components/ui/toggle-theme";
 import UserButton from "../auth/components/user-button";
 import { Button } from "@/components/ui/button";
 import { axisAssets } from "@/lib/axis-assets";
@@ -47,7 +46,6 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <ThemeToggle />
           <UserButton />
           <Button asChild className="hidden rounded-full bg-primary px-5 text-primary-foreground shadow-[0_12px_30px_rgba(239,68,68,0.24)] hover:bg-primary/90 md:inline-flex">
             <Link href="/auth/sign-in">Launch Studio</Link>

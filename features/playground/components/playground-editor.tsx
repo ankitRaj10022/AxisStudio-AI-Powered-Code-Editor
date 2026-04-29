@@ -3,10 +3,12 @@
 import { useRef, useEffect, useCallback } from "react";
 import Editor, { type Monaco } from "@monaco-editor/react";
 import type * as MonacoEditor from "monaco-editor";
+import { useTheme } from "next-themes";
 import {
   configureMonaco,
   defaultEditorOptions,
   getEditorLanguage,
+  getMonacoTheme,
 } from "@/features/playground/libs/editor-config";
 import type { TemplateFile } from "@/features/playground/libs/path-to-json";
 
@@ -33,6 +35,7 @@ export const PlaygroundEditor = ({
   onRejectSuggestion,
   onTriggerSuggestion,
 }: PlaygroundEditorProps) => {
+  const { resolvedTheme } = useTheme();
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const inlineCompletionProviderRef = useRef<any>(null);
@@ -350,8 +353,6 @@ export const PlaygroundEditor = ({
       cursorSmoothCaretAnimation: "on",
     });
 
-    configureMonaco(monaco);
-
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, () => {
       console.log("Ctrl+Space pressed, triggering suggestion");
       onTriggerSuggestion("completion", editor);
@@ -546,10 +547,12 @@ export const PlaygroundEditor = ({
       )}
 
       <Editor
+        beforeMount={configureMonaco}
         height="100%"
         value={content}
         onChange={(value) => onContentChange(value || "")}
         onMount={handleEditorDidMount}
+        theme={getMonacoTheme(resolvedTheme)}
         language={
           activeFile
             ? getEditorLanguage(activeFile.fileExtension || "")

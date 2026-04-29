@@ -53,7 +53,6 @@ export const getEditorLanguage = (fileExtension: string): string => {
 };
 
 export const configureMonaco = (monaco: Monaco) => {
-  // Define a beautiful modern dark theme
   monaco.editor.defineTheme("modern-dark", {
     base: "vs-dark",
     inherit: true,
@@ -219,8 +218,81 @@ export const configureMonaco = (monaco: Monaco) => {
     },
   });
 
-  // Set the theme
-  monaco.editor.setTheme("modern-dark");
+  monaco.editor.defineTheme("modern-light", {
+    base: "vs",
+    inherit: true,
+    rules: [
+      { token: "comment", foreground: "8A8F98", fontStyle: "italic" },
+      { token: "keyword", foreground: "B45309", fontStyle: "bold" },
+      { token: "keyword.control", foreground: "B45309", fontStyle: "bold" },
+      { token: "string", foreground: "0F766E" },
+      { token: "number", foreground: "7C3AED" },
+      { token: "entity.name.function", foreground: "9A3412" },
+      { token: "support.function", foreground: "9A3412" },
+      { token: "variable", foreground: "1D4ED8" },
+      { token: "variable.parameter", foreground: "1D4ED8" },
+      { token: "entity.name.type", foreground: "7C2D12" },
+      { token: "support.type", foreground: "7C2D12" },
+      { token: "storage.type", foreground: "C2410C" },
+      { token: "constant", foreground: "BE185D" },
+      { token: "tag", foreground: "C2410C" },
+      { token: "attribute.name", foreground: "1D4ED8" },
+      { token: "attribute.value", foreground: "0F766E" },
+      { token: "key", foreground: "1D4ED8" },
+      { token: "invalid", foreground: "DC2626", fontStyle: "underline" },
+    ],
+    colors: {
+      "editor.background": "#FFF9F2",
+      "editor.foreground": "#1F2937",
+      "editorLineNumber.foreground": "#9CA3AF",
+      "editorLineNumber.activeForeground": "#4B5563",
+      "editorCursor.foreground": "#111827",
+      "editor.selectionBackground": "#FDE68A80",
+      "editor.selectionHighlightBackground": "#FED7AA66",
+      "editor.inactiveSelectionBackground": "#E5E7EB",
+      "editor.lineHighlightBackground": "#FFF1DE",
+      "editor.lineHighlightBorder": "#F6D7B0",
+      "editorGutter.background": "#FFF9F2",
+      "editorGutter.modifiedBackground": "#F59E0B66",
+      "editorGutter.addedBackground": "#10B98166",
+      "editorGutter.deletedBackground": "#EF444466",
+      "scrollbar.shadow": "#00000014",
+      "scrollbarSlider.background": "#C4B5A588",
+      "scrollbarSlider.hoverBackground": "#A78B7A99",
+      "scrollbarSlider.activeBackground": "#8B6B5A99",
+      "minimap.background": "#FFF4E8",
+      "minimap.selectionHighlight": "#F59E0B55",
+      "editor.findMatchBackground": "#FDBA7480",
+      "editor.findMatchHighlightBackground": "#FED7AA80",
+      "editor.findRangeHighlightBackground": "#FDE68A55",
+      "editor.wordHighlightBackground": "#FBCFE866",
+      "editor.wordHighlightStrongBackground": "#F9A8D466",
+      "editorBracketMatch.background": "#FFEDD580",
+      "editorBracketMatch.border": "#F59E0B",
+      "editorIndentGuide.background": "#EADBC8",
+      "editorIndentGuide.activeBackground": "#D6BDA2",
+      "editorRuler.foreground": "#F3E2CC",
+      "editorWhitespace.foreground": "#D6BDA2",
+      "editorError.foreground": "#DC2626",
+      "editorWarning.foreground": "#D97706",
+      "editorInfo.foreground": "#2563EB",
+      "editorHint.foreground": "#7C3AED",
+      "editorSuggestWidget.background": "#FFF7ED",
+      "editorSuggestWidget.border": "#F3E2CC",
+      "editorSuggestWidget.foreground": "#1F2937",
+      "editorSuggestWidget.selectedBackground": "#FDEBD3",
+      "editorHoverWidget.background": "#FFF7ED",
+      "editorHoverWidget.border": "#F3E2CC",
+      "panel.background": "#FFF9F2",
+      "panel.border": "#F3E2CC",
+      "activityBar.background": "#FFF9F2",
+      "activityBar.foreground": "#1F2937",
+      "activityBar.border": "#F3E2CC",
+      "sideBar.background": "#FFF7ED",
+      "sideBar.foreground": "#1F2937",
+      "sideBar.border": "#F3E2CC",
+    },
+  });
   
   // Configure additional editor settings
   monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
@@ -261,6 +333,9 @@ export const configureMonaco = (monaco: Monaco) => {
     typeRoots: ["node_modules/@types"],
   });
 };
+
+export const getMonacoTheme = (theme?: string) =>
+  theme === "light" ? "modern-light" : "modern-dark";
 
 export const defaultEditorOptions = {
   // Font settings
