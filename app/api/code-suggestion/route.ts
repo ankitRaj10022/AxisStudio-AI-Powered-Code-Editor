@@ -1,4 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  getOllamaBaseUrl,
+  getOllamaHeaders,
+  getOllamaModel,
+} from "@/lib/ollama";
 
 interface CodeSuggestionRequest {
   fileContent: string;
@@ -131,11 +136,11 @@ Generate suggestion:`;
 
 async function generateSuggestion(prompt: string): Promise<string> {
   try {
-    const response = await fetch("http://localhost:11434/api/generate", {
+    const response = await fetch(`${getOllamaBaseUrl()}/generate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getOllamaHeaders(),
       body: JSON.stringify({
-        model: "codellama:latest",
+        model: getOllamaModel(),
         prompt,
         stream: false,
         options: {

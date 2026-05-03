@@ -1,18 +1,31 @@
 "use server";
 
 import { auth } from "@/auth";
-import { db } from "@/lib/db";
+import { getDbOrNull } from "@/lib/db";
+import { accounts, users } from "@/lib/database/schema";
 import { logDatabaseError } from "@/lib/database-error";
 import { isDynamicServerError } from "next/dist/client/components/hooks-server-context";
+import { eq } from "drizzle-orm";
 
 
 export const getUserById = async (id:string)=>{
     try {
-        const user = await db.user.findUnique({
-            where:{id},
-            include:{accounts:true}
-        })
-        return user
+        const db = getDbOrNull();
+        if (!db) return null;
+
+        const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+
+        if (!user) return null;
+
+        const linkedAccounts = await db
+          .select()
+          .from(accounts)
+          .where(eq(accounts.userId, id));
+
+        return {
+          ...user,
+          accounts: linkedAccounts,
+        };
     } catch (error) {
         logDatabaseError("getUserById", error)
         return null
@@ -21,11 +34,15 @@ export const getUserById = async (id:string)=>{
 
 export const getAccountByUserId = async (userId:string)=>{
     try {
-        const account = await db.account.findFirst({
-            where:{
-                userId
-            }
-        })
+        const db = getDbOrNull();
+        if (!db) return null;
+
+        const [account] = await db
+          .select()
+          .from(accounts)
+          .where(eq(accounts.userId, userId))
+          .limit(1);
+
         return account
     } catch (error) {
         logDatabaseError("getAccountByUserId", error)

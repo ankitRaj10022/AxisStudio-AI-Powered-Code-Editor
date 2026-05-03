@@ -2,11 +2,13 @@ import {
   readTemplateStructureFromJson,
   saveTemplateStructureToJson,
 } from "@/features/playground/libs/path-to-json";
-import { db } from "@/lib/db";
+import { getDbOrNull } from "@/lib/db";
+import { playgrounds } from "@/lib/database/schema";
 import { templatePaths } from "@/lib/template";
 import path from "path";
 import fs from "fs/promises";
 import { NextRequest } from "next/server";
+import { eq } from "drizzle-orm";
 
 function validateJsonStructure(data: unknown): boolean {
   try {
@@ -29,9 +31,19 @@ export async function GET(
     return Response.json({ error: "Missing playground ID" }, { status: 400 });
   }
 
-  const playground = await db.playground.findUnique({
-    where: { id },
-  });
+  const db = getDbOrNull();
+  if (!db) {
+    return Response.json(
+      { error: "Postgres database is not configured" },
+      { status: 503 },
+    );
+  }
+
+  const [playground] = await db
+    .select()
+    .from(playgrounds)
+    .where(eq(playgrounds.id, id))
+    .limit(1);
 
   if (!playground) {
     return Response.json({ error: "Playground not found" }, { status: 404 });

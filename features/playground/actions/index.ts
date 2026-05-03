@@ -1,9 +1,17 @@
 "use server"
 import { currentUser } from "@/features/auth/actions";
-import { db } from "@/lib/db"
+import { getDbOrNull } from "@/lib/db"
 import { logDatabaseError } from "@/lib/database-error";
 import { TemplateFolder } from "../libs/path-to-json";
 import { revalidatePath } from "next/cache";
+import { and, desc, eq } from "drizzle-orm";
+import {
+  playgrounds,
+  starMarks,
+  templateFiles,
+  users,
+} from "@/lib/database/schema";
+import type { Template } from "@/lib/database/constants";
 
 
 // Toggle marked status for a problem
@@ -15,24 +23,34 @@ export const toggleStarMarked = async (playgroundId: string, isChecked: boolean)
   }
 
   try {
+    const db = getDbOrNull();
+    if (!db) {
+      throw new Error("Postgres database is not configured");
+    }
+
     if (isChecked) {
-      await db.starMark.create({
-        data: {
+      await db
+        .insert(starMarks)
+        .values({
           userId: userId!,
           playgroundId,
           isMarked: isChecked,
-        },
-      });
-    } else {
-      await db.starMark.delete({
-        where: {
-          userId_playgroundId: {
-            userId,
-            playgroundId: playgroundId,
-
+        })
+        .onConflictDoUpdate({
+          target: [starMarks.userId, starMarks.playgroundId],
+          set: {
+            isMarked: isChecked,
           },
-        },
-      });
+        });
+    } else {
+      await db
+        .delete(starMarks)
+        .where(
+          and(
+            eq(starMarks.userId, userId),
+            eq(starMarks.playgroundId, playgroundId),
+          ),
+        );
     }
 
     revalidatePath("/dashboard");
@@ -45,21 +63,31 @@ export const toggleStarMarked = async (playgroundId: string, isChecked: boolean)
 
 export const createPlayground = async (data:{
     title: string;
-    template: "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR";
+    template: Template;
     description?: string;
   })=>{
     const {template , title , description} = data;
 
     const user = await currentUser();
     try {
-        const playground = await db.playground.create({
-            data:{
-                title:title,
-                description:description,
-                template:template,
-                userId:user?.id!
-            }
-        })
+        if (!user?.id) {
+          throw new Error("User ID is required");
+        }
+
+        const db = getDbOrNull();
+        if (!db) {
+          throw new Error("Postgres database is not configured");
+        }
+
+        const [playground] = await db
+          .insert(playgrounds)
+          .values({
+            title,
+            description,
+            template,
+            userId: user.id,
+          })
+          .returning();
 
         return playground;
     } catch (error) {
@@ -72,25 +100,38 @@ export const createPlayground = async (data:{
 export const getAllPlaygroundForUser = async ()=>{
     const user = await currentUser();
     try {
-        const user  = await currentUser();
-        const playground = await db.playground.findMany({
-            where:{
-                userId:user?.id!
-            },
-            include:{
-                user:true,
-                Starmark:{
-                    where:{
-                        userId:user?.id!
-                    },
-                    select:{
-                        isMarked:true
-                    }
-                }
-            }
-        })
-      
-        return playground;
+        if (!user?.id) {
+          return [];
+        }
+
+        const db = getDbOrNull();
+        if (!db) {
+          return [];
+        }
+
+        const rows = await db
+          .select({
+            playground: playgrounds,
+            owner: users,
+            isMarked: starMarks.isMarked,
+          })
+          .from(playgrounds)
+          .innerJoin(users, eq(playgrounds.userId, users.id))
+          .leftJoin(
+            starMarks,
+            and(
+              eq(starMarks.playgroundId, playgrounds.id),
+              eq(starMarks.userId, user.id),
+            ),
+          )
+          .where(eq(playgrounds.userId, user.id))
+          .orderBy(desc(playgrounds.updatedAt), desc(playgrounds.createdAt));
+
+        return rows.map(({ playground, owner, isMarked }) => ({
+          ...playground,
+          user: owner,
+          Starmark: typeof isMarked === "boolean" ? [{ isMarked }] : [],
+        }));
     } catch (error) {
         logDatabaseError("getAllPlaygroundForUser", error)
         return []
@@ -99,17 +140,37 @@ export const getAllPlaygroundForUser = async ()=>{
 
 export const getPlaygroundById = async (id:string)=>{
     try {
-        const playground = await db.playground.findUnique({
-            where:{id},
-            select:{
-              templateFiles:{
-                select:{
-                  content:true
-                }
-              }
-            }
-        })
-        return playground;
+        const db = getDbOrNull();
+        if (!db) {
+          return null;
+        }
+
+        const rows = await db
+          .select({
+            playground: playgrounds,
+            templateContent: templateFiles.content,
+          })
+          .from(playgrounds)
+          .leftJoin(templateFiles, eq(templateFiles.playgroundId, playgrounds.id))
+          .where(eq(playgrounds.id, id))
+          .limit(1);
+
+        const row = rows[0];
+        if (!row) {
+          return null;
+        }
+
+        return {
+          id: row.playground.id,
+          name: row.playground.title,
+          title: row.playground.title,
+          description: row.playground.description,
+          template: row.playground.template,
+          templateFiles:
+            row.templateContent === null
+              ? []
+              : [{ content: row.templateContent }],
+        };
     } catch (error) {
         logDatabaseError("getPlaygroundById", error)
         return null
@@ -121,18 +182,25 @@ export const SaveUpdatedCode = async (playgroundId: string, data: TemplateFolder
   if (!user) return null;
 
   try {
-    const updatedPlayground = await db.templateFile.upsert({
-      where: {
-        playgroundId, // now allowed since playgroundId is unique
-      },
-      update: {
-        content: JSON.stringify(data),
-      },
-      create: {
+    const db = getDbOrNull();
+    if (!db) {
+      throw new Error("Postgres database is not configured");
+    }
+
+    const [updatedPlayground] = await db
+      .insert(templateFiles)
+      .values({
         playgroundId,
-        content: JSON.stringify(data),
-      },
-    });
+        content: data,
+      })
+      .onConflictDoUpdate({
+        target: templateFiles.playgroundId,
+        set: {
+          content: data,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
 
     return updatedPlayground;
   } catch (error) {
@@ -143,9 +211,12 @@ export const SaveUpdatedCode = async (playgroundId: string, data: TemplateFolder
 
 export const deleteProjectById = async (id:string)=>{
     try {
-        await db.playground.delete({
-            where:{id}
-        })
+        const db = getDbOrNull();
+        if (!db) {
+          throw new Error("Postgres database is not configured");
+        }
+
+        await db.delete(playgrounds).where(eq(playgrounds.id, id))
         revalidatePath("/dashboard")
     } catch (error) {
         logDatabaseError("deleteProjectById", error)
@@ -155,10 +226,18 @@ export const deleteProjectById = async (id:string)=>{
 
 export const editProjectById = async (id:string,data:{title:string , description:string})=>{
     try {
-        await db.playground.update({
-            where:{id},
-            data:data
-        })
+        const db = getDbOrNull();
+        if (!db) {
+          throw new Error("Postgres database is not configured");
+        }
+
+        await db
+          .update(playgrounds)
+          .set({
+            ...data,
+            updatedAt: new Date(),
+          })
+          .where(eq(playgrounds.id, id))
         revalidatePath("/dashboard")
     } catch (error) {
         logDatabaseError("editProjectById", error)
@@ -167,35 +246,44 @@ export const editProjectById = async (id:string,data:{title:string , description
 
 export const duplicateProjectById = async (id: string) => {
     try {
-        // Fetch the original playground data
-        const originalPlayground = await db.playground.findUnique({
-            where: { id },
-            include: {
-                templateFiles: true, // Include related template files
-            },
-        });
+        const db = getDbOrNull();
+        if (!db) {
+          throw new Error("Postgres database is not configured");
+        }
+
+        const rows = await db
+          .select({
+            playground: playgrounds,
+            templateContent: templateFiles.content,
+          })
+          .from(playgrounds)
+          .leftJoin(templateFiles, eq(templateFiles.playgroundId, playgrounds.id))
+          .where(eq(playgrounds.id, id))
+          .limit(1);
+
+        const originalPlayground = rows[0];
 
         if (!originalPlayground) {
             throw new Error("Original playground not found");
         }
 
-        // Create a new playground with the same data but a new ID
-        const duplicatedPlayground = await db.playground.create({
-            data: {
-                title: `${originalPlayground.title} (Copy)`,
-                description: originalPlayground.description,
-                template: originalPlayground.template,
-                userId: originalPlayground.userId,
-                templateFiles: {
-                  // @ts-ignore
-                    create: originalPlayground.templateFiles.map((file) => ({
-                        content: file.content,
-                    })),
-                },
-            },
-        });
+        const [duplicatedPlayground] = await db
+          .insert(playgrounds)
+          .values({
+            title: `${originalPlayground.playground.title} (Copy)`,
+            description: originalPlayground.playground.description,
+            template: originalPlayground.playground.template,
+            userId: originalPlayground.playground.userId,
+          })
+          .returning();
 
-        // Revalidate the dashboard path to reflect the changes
+        if (originalPlayground.templateContent) {
+          await db.insert(templateFiles).values({
+            playgroundId: duplicatedPlayground.id,
+            content: originalPlayground.templateContent,
+          });
+        }
+
         revalidatePath("/dashboard");
 
         return duplicatedPlayground;

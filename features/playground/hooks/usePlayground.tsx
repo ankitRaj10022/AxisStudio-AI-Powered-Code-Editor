@@ -7,6 +7,10 @@ import type { TemplateFolder } from '@/features/playground/libs/path-to-json';
 interface PlaygroundData {
   id: string;
   name?: string;
+  title?: string;
+  template?: string;
+  description?: string | null;
+  templateFiles?: Array<{ content: TemplateFolder | string }>;
   [key: string]: any;
 }
 
@@ -40,6 +44,12 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
       if (typeof rawContent === "string") {
         const parsedContent = JSON.parse(rawContent);
         setTemplateData(parsedContent);
+        toast.success("Playground loaded successfully");
+        return;
+      }
+
+      if (rawContent && typeof rawContent === "object" && "items" in rawContent) {
+        setTemplateData(rawContent as TemplateFolder);
         toast.success("Playground loaded successfully");
         return;
       }

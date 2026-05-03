@@ -1,4 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  getOllamaBaseUrl,
+  getOllamaHeaders,
+  getOllamaModel,
+} from "@/lib/ollama";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -45,15 +50,15 @@ Keep responses concise but comprehensive. Use code blocks with language specific
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const ollamaBaseUrl = getOllamaBaseUrl();
+  const ollamaModel = getOllamaModel();
 
   try {
-    const response = await fetch("http://localhost:11434/api/generate", {
+    const response = await fetch(`${ollamaBaseUrl}/generate`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getOllamaHeaders(),
       body: JSON.stringify({
-        model: "codellama:latest",
+        model: ollamaModel,
         prompt,
         stream: false,
         options: {
@@ -108,13 +113,11 @@ Enhanced prompt should:
 Return only the enhanced prompt, nothing else.`;
 
   try {
-    const response = await fetch("http://localhost:11434/api/generate", {
+    const response = await fetch(`${getOllamaBaseUrl()}/generate`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getOllamaHeaders(),
       body: JSON.stringify({
-        model: "codellama:latest",
+        model: getOllamaModel(),
         prompt: enhancementPrompt,
         stream: false,
         options: {

@@ -1,148 +1,142 @@
-# 🧠 AxisStudio – AI-Powered Web IDE
+# axisStudio - AI-Powered Web IDE
 
-![axisStudio Thumbnail](public/axisstudio/readme/AxisStudio-Thumbnail.png)
+![axisStudio Thumbnail](public/axisstudio/readme/thumbnail.svg)
 
-**AxisStudio** is a blazing-fast, AI-integrated web IDE built entirely in the browser using **Next.js App Router**, **WebContainers**, **Monaco Editor**, and **local LLMs via Ollama**. It offers real-time code execution, an AI-powered chat assistant, and support for multiple tech stacks — all wrapped in a stunning developer-first UI.
+`axisStudio` is a browser IDE built with Next.js App Router, WebContainers, Monaco Editor, Auth.js, Neon Postgres, Drizzle ORM, and Ollama-compatible AI endpoints. It gives you playground creation, a live preview runtime, file management, AI chat, and inline code suggestions in one workspace.
 
----
+## Features
 
-## 🚀 Features
+- OAuth login with Google and GitHub via Auth.js
+- Neon Postgres persistence through Drizzle ORM
+- Browser-based editor, file explorer, terminal, and live preview
+- AI chat and inline AI suggestions powered by Ollama-compatible endpoints
+- Template-based playground creation for React, Next.js, Express, Hono, Vue, and Angular
+- Responsive UI with motion graphics and an editor-first workspace shell
 
-- 🔐 **OAuth Login with NextAuth** – Supports Google & GitHub login.
-- 🎨 **Modern UI** – Built with TailwindCSS & ShadCN UI.
-- 🌗 **Dark/Light Mode** – Seamlessly toggle between themes.
-- 🧱 **Project Templates** – Choose from React, Next.js, Express, Hono, Vue, or Angular.
-- 🗂️ **Custom File Explorer** – Create, rename, delete, and manage files/folders easily.
-- 🖊️ **Enhanced Monaco Editor** – Syntax highlighting, formatting, keybindings, and AI autocomplete.
-- 💡 **AI Suggestions with Ollama** – Local models give you code completion on `Ctrl + Space` or double `Enter`. Accept with `Tab`.
-- ⚙️ **WebContainers Integration** – Instantly run frontend/backend apps right in the browser.
-- 💻 **Terminal with xterm.js** – Fully interactive embedded terminal experience.
-- 🤖 **AI Chat Assistant** – Share files with the AI and get help, refactors, or explanations.
+## Tech Stack
 
----
+| Layer | Technology |
+| --- | --- |
+| Framework | Next.js 15 (App Router) |
+| Styling | Tailwind CSS, shadcn/ui |
+| Language | TypeScript |
+| Auth | Auth.js |
+| Editor | Monaco Editor |
+| Runtime | WebContainers |
+| Terminal | xterm.js |
+| Database | Neon Postgres + Drizzle ORM |
+| AI | Ollama-compatible models |
 
-## 🧱 Tech Stack
+## Getting Started
 
-| Layer         | Technology                                   |
-|---------------|----------------------------------------------|
-| Framework     | Next.js 15 (App Router)                      |
-| Styling       | TailwindCSS, ShadCN UI                       |
-| Language      | TypeScript                                   |
-| Auth          | NextAuth (Google + GitHub OAuth)             |
-| Editor        | Monaco Editor                                |
-| AI Suggestion | Ollama (LLMs running locally via Docker)     |
-| Runtime       | WebContainers                                |
-| Terminal      | xterm.js                                     |
-| Database      | MongoDB (via DATABASE_URL)                   |
-
----
-
-## 🛠️ Getting Started
-
-### 1. Clone the Repo
+### 1. Clone the repo
 
 ```bash
 git clone https://github.com/ankitRaj10022/AxisStudio-AI-Powered-Code-Editor.git
 cd AxisStudio-AI-Powered-Code-Editor
-````
+```
 
-### 2. Install Dependencies
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Set Up Environment Variables
+### 3. Create the local env file
 
-Create a `.env` file using the template:
-
-```bash
-cp .env.example .env.local
+```powershell
+Copy-Item .env.example .env.local
 ```
 
-Then, fill in your credentials:
+Fill in the values:
 
 ```env
 AUTH_SECRET=your_auth_secret
 AUTH_GOOGLE_ID=your_google_client_id
-AUTH_GOOGLE_SECRET=your_google_secret
+AUTH_GOOGLE_SECRET=your_google_client_secret
 AUTH_GITHUB_ID=your_github_client_id
-AUTH_GITHUB_SECRET=your_github_secret
-DATABASE_URL=your_mongodb_connection_string
+AUTH_GITHUB_SECRET=your_github_client_secret
 NEXTAUTH_URL=http://localhost:3000
+POSTGRES_URL=postgresql://user:password@host:5432/axisstudio?sslmode=require
+OLLAMA_BASE_URL=http://localhost:11434/api
+OLLAMA_MODEL=codellama:latest
 ```
 
-### 4. Start Local Ollama Model
+`axisStudio` also accepts a PostgreSQL `DATABASE_URL`, but `POSTGRES_URL` is preferred so an old MongoDB env var does not get reused accidentally.
 
-Make sure [Ollama](https://ollama.com/) and Docker are installed, then run:
+### 4. Push the Drizzle schema
+
+After `POSTGRES_URL` points at your Neon database:
+
+```bash
+npm run db:push
+```
+
+### 5. Start Ollama
 
 ```bash
 ollama run codellama
 ```
 
-Or use your preferred model that supports code generation.
+Or set `OLLAMA_BASE_URL` and `OLLAMA_MODEL` to a remote compatible endpoint.
 
-### 5. Run the Development Server
+### 6. Run the app
 
 ```bash
 npm run dev
 ```
 
-Visit `http://localhost:3000` in your browser.
+Open `http://localhost:3000`.
 
----
+## Database Commands
 
-## 📁 Project Structure
-
+```bash
+npm run db:generate
+npm run db:push
+npm run db:studio
 ```
+
+## Vercel Deployment
+
+1. Create a Neon Postgres database from the Vercel Marketplace.
+2. Add `POSTGRES_URL` to the project, or use the injected integration variable.
+3. Add `AUTH_SECRET`, OAuth provider credentials, `NEXTAUTH_URL`, and the Ollama env vars.
+4. Update the GitHub and Google OAuth callback URLs:
+   `https://your-domain/api/auth/callback/github`
+   `https://your-domain/api/auth/callback/google`
+5. Run `npm run db:push` against the production Neon database before the first production sign-in.
+
+## Project Structure
+
+```text
 .
-├── app/                     # App Router-based pages & routes
-├── components/              # UI components
-├── editor/                  # Monaco, File Explorer, Terminal
-├── lib/                     # Utility functions
-├── public/                  # Static files (incl. thumbnail)
-├── utils/                   # AI helpers, WebContainer logic
-├── .env                     # Example env vars
+├── app/                     # App Router pages and API routes
+├── components/              # Shared UI primitives
+├── features/                # Auth, dashboard, playground, AI, webcontainer modules
+├── lib/                     # Database, auth, utilities, brand assets
+├── public/                  # Static assets and README thumbnail
+├── axisStudio-staters/      # Playground starter templates
+├── drizzle.config.ts        # Drizzle Kit configuration
+├── .env.example             # Environment template
 └── README.md
 ```
 
----
+## Keyboard Shortcuts
 
-## 🎯 Keyboard Shortcuts
+- `Ctrl + Space` or `Double Enter`: trigger AI suggestions
+- `Tab`: accept AI suggestion
+- `Ctrl + S`: save the active file in the playground
 
-* `Ctrl + Space` or `Double Enter`: Trigger AI suggestions
-* `Tab`: Accept AI suggestion
-* `/`: Open Command Palette (if implemented)
-
----
-
-## ✅ Roadmap
-
-* [x] Google & GitHub Auth via NextAuth
-* [x] Multiple stack templates
-* [x] Monaco Editor + AI
-* [x] WebContainers + terminal
-* [x] AI chat for code assistance
-* [ ] GitHub repo import/export
-* [ ] Save/load playground from DB
-* [ ] Real-time collaboration
-* [ ] Plugin system for templates/tools
-* [ ] One-click deploy via Vercel/Netlify
-
----
-
-## 📄 License
+## License
 
 This project is licensed under the [MIT License](LICENSE).
 
----
+## Acknowledgements
 
-## 🙏 Acknowledgements
-
-* [Monaco Editor](https://microsoft.github.io/monaco-editor/)
-* [Ollama](https://ollama.com/) – for offline LLMs
-* [WebContainers](https://webcontainers.io/)
-* [xterm.js](https://xtermjs.org/)
-* [NextAuth.js](https://next-auth.js.org/)
-
-```
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/)
+- [Ollama](https://ollama.com/)
+- [WebContainers](https://webcontainers.io/)
+- [xterm.js](https://xtermjs.org/)
+- [Auth.js](https://authjs.dev/)
+- [Drizzle ORM](https://orm.drizzle.team/)
+- [Neon](https://neon.tech/)
