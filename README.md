@@ -106,6 +106,49 @@ npm run db:studio
    `https://your-domain/api/auth/callback/google`
 5. Run `npm run db:push` against the production Neon database before the first production sign-in.
 
+## Docker and Kubernetes Deployment
+
+This repo now includes:
+
+- `Dockerfile` for a production Next.js standalone image
+- `.github/workflows/docker-k8s-deploy.yml` for GitHub Actions based image build and cluster deploy
+- `k8s/base` and `k8s/overlays/production` manifests for Kubernetes rollout
+
+### GitHub Secrets Required
+
+- `KUBE_CONFIG`
+- `K8S_INGRESS_HOST`
+- `AUTH_SECRET`
+- `AUTH_GOOGLE_ID`
+- `AUTH_GOOGLE_SECRET`
+- `AUTH_GITHUB_ID`
+- `AUTH_GITHUB_SECRET`
+- `NEXTAUTH_URL`
+- `POSTGRES_URL`
+- `OLLAMA_BASE_URL`
+- `OLLAMA_MODEL`
+
+Optional:
+
+- `OLLAMA_API_KEY`
+- `GHCR_PULL_USERNAME`
+- `GHCR_PULL_TOKEN`
+
+### What the workflow does
+
+1. Builds the app into a Docker image
+2. Pushes the image to `ghcr.io`
+3. Creates or updates the `axisstudio-env` Kubernetes secret
+4. Applies the production manifests
+5. Waits for the deployment rollout to finish
+
+### Notes
+
+- `KUBE_CONFIG` should contain the full kubeconfig file content.
+- If your `ghcr.io` package is private, add `GHCR_PULL_USERNAME` and `GHCR_PULL_TOKEN` so the workflow can create the pull secret for the cluster.
+- Update the production ingress hostname through the `K8S_INGRESS_HOST` GitHub secret.
+- The app health probe is exposed at `/api/health`.
+
 ## Project Structure
 
 ```text
