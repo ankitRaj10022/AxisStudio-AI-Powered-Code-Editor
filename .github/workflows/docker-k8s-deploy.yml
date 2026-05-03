@@ -166,12 +166,16 @@ jobs:
         run: kubectl apply -k k8s/overlays/production
 
       - name: Create GHCR pull secret
-        if: ${{ secrets.GHCR_PULL_USERNAME != '' && secrets.GHCR_PULL_TOKEN != '' }}
         shell: bash
         env:
           GHCR_PULL_USERNAME: ${{ secrets.GHCR_PULL_USERNAME }}
           GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
         run: |
+          if [ -z "$GHCR_PULL_USERNAME" ] || [ -z "$GHCR_PULL_TOKEN" ]; then
+            echo "GHCR pull credentials not provided. Skipping imagePullSecret creation."
+            exit 0
+          fi
+
           kubectl create secret docker-registry ghcr-creds \
             --namespace "${K8S_NAMESPACE}" \
             --docker-server=ghcr.io \
