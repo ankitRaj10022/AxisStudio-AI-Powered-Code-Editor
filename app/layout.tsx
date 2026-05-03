@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { logDatabaseError } from "@/lib/database-error";
 import { isDynamicServerError } from "next/dist/client/components/hooks-server-context";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const sans = Space_Grotesk({
   subsets: ["latin"],
@@ -60,6 +61,7 @@ export default async function RootLayout({
               <div className="flex-1">{children}</div>
             </div>
           </ThemeProvider>
+          <SpeedInsights />
         </body>
       </html>
     </SessionProvider>
