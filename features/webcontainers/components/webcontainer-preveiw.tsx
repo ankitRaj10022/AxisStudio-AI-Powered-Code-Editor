@@ -8,12 +8,7 @@ import {
   SquareTerminal,
   XCircle,
 } from "lucide-react";
-import { WebContainer } from "@webcontainer/api";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { WebContainer, type WebContainerProcess } from "@webcontainer/api";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { TemplateFolder } from "@/features/playground/libs/path-to-json";
 import { transformToWebContainerFormat } from "../hooks/transformer";
@@ -42,6 +37,15 @@ const previewSteps = [
   "Starting development server",
 ];
 
+const INSTALL_ARGS = [
+  "install",
+  "--include=dev",
+  "--legacy-peer-deps",
+  "--no-audit",
+  "--no-fund",
+];
+const INSTALL_LOG_TAIL_LINES = 14;
+
 function resolveRuntimeCommand(packageJsonSource: string | null): RuntimeCommand | null {
   if (!packageJsonSource) return null;
 
@@ -66,6 +70,21 @@ function resolveRuntimeCommand(packageJsonSource: string | null): RuntimeCommand
   }
 }
 
+async function clearWorkspace(instance: WebContainer) {
+  const entries = await instance.fs.readdir(".", {
+    withFileTypes: true,
+  });
+
+  await Promise.all(
+    entries.map((entry) =>
+      instance.fs.rm(entry.name, {
+        force: true,
+        recursive: true,
+      }),
+    ),
+  );
+}
+
 const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
   templateData,
   error,
@@ -82,9 +101,19 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
   const [isSetupInProgress, setIsSetupInProgress] = useState(false);
   const [runtimeCommand, setRuntimeCommand] = useState<string>("");
   const terminalRef = useRef<TerminalRef | null>(null);
+  const installProcessRef = useRef<WebContainerProcess | null>(null);
+  const runtimeProcessRef = useRef<WebContainerProcess | null>(null);
+
+  const stopActiveProcesses = React.useCallback(() => {
+    installProcessRef.current?.kill();
+    installProcessRef.current = null;
+    runtimeProcessRef.current?.kill();
+    runtimeProcessRef.current = null;
+  }, []);
 
   useEffect(() => {
     if (forceResetup) {
+      stopActiveProcesses();
       setIsSetupComplete(false);
       setIsSetupInProgress(false);
       setPreviewUrl("");
@@ -92,11 +121,40 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
       setRuntimeCommand("");
       setSetupError(null);
     }
-  }, [forceResetup]);
+  }, [forceResetup, stopActiveProcesses]);
+
+  useEffect(() => {
+    return () => {
+      stopActiveProcesses();
+    };
+  }, [stopActiveProcesses]);
 
   useEffect(() => {
     async function setupContainer() {
       if (!instance || isSetupComplete || isSetupInProgress) return;
+
+      const installLogTail: string[] = [];
+
+      const captureLogOutput = (chunk: string) => {
+        terminalRef.current?.writeToTerminal(chunk);
+
+        const normalizedLines = chunk
+          .replace(/\r/g, "")
+          .split("\n")
+          .map((line) => line.trimEnd())
+          .filter(Boolean);
+
+        if (!normalizedLines.length) return;
+
+        installLogTail.push(...normalizedLines);
+
+        if (installLogTail.length > INSTALL_LOG_TAIL_LINES) {
+          installLogTail.splice(
+            0,
+            installLogTail.length - INSTALL_LOG_TAIL_LINES,
+          );
+        }
+      };
 
       try {
         setIsSetupInProgress(true);
@@ -104,12 +162,15 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
         setPreviewUrl("");
 
         setCurrentStep(1);
+        stopActiveProcesses();
         terminalRef.current?.clearTerminal();
         terminalRef.current?.writeToTerminal("[info] transforming template data...\r\n");
 
         const files = transformToWebContainerFormat(templateData);
 
         setCurrentStep(2);
+        terminalRef.current?.writeToTerminal("[info] clearing previous workspace...\r\n");
+        await clearWorkspace(instance);
         terminalRef.current?.writeToTerminal("[info] mounting files to workspace...\r\n");
         await instance.mount(files);
         terminalRef.current?.writeToTerminal("[done] files mounted successfully\r\n");
@@ -126,21 +187,29 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
         }
 
         setCurrentStep(3);
-        terminalRef.current?.writeToTerminal("[info] installing dependencies...\r\n");
-        const installProcess = await instance.spawn("npm", ["install"]);
+        terminalRef.current?.writeToTerminal(
+          `[info] installing dependencies with "npm ${INSTALL_ARGS.join(" ")}"...\r\n`,
+        );
+        const installProcess = await instance.spawn("npm", INSTALL_ARGS);
+        installProcessRef.current = installProcess;
 
         installProcess.output.pipeTo(
           new WritableStream({
             write(data) {
-              terminalRef.current?.writeToTerminal(data);
+              captureLogOutput(data);
             },
           }),
         );
 
         const installExitCode = await installProcess.exit;
+        installProcessRef.current = null;
         if (installExitCode !== 0) {
+          const recentLogOutput = installLogTail.length
+            ? `\n\nRecent install log:\n${installLogTail.join("\n")}`
+            : "";
+
           throw new Error(
-            `Failed to install dependencies. Exit code: ${installExitCode}`,
+            `Failed to install dependencies. Exit code: ${installExitCode}.${recentLogOutput}`,
           );
         }
 
@@ -152,8 +221,9 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
           `[info] booting preview with "${nextRuntimeCommand.label}"...\r\n`,
         );
 
+        let unsubscribeServerReady = () => {};
         const readyPromise = new Promise<string>((resolve) => {
-          instance.on("server-ready", (_port: number, url: string) => {
+          unsubscribeServerReady = instance.on("server-ready", (_port: number, url: string) => {
             resolve(url);
           });
         });
@@ -162,6 +232,7 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
           nextRuntimeCommand.command,
           nextRuntimeCommand.args,
         );
+        runtimeProcessRef.current = startProcess;
 
         startProcess.output.pipeTo(
           new WritableStream({
@@ -175,8 +246,10 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
           readyPromise.then((url) => ({ type: "ready" as const, url })),
           startProcess.exit.then((code) => ({ type: "exit" as const, code })),
         ]);
+        unsubscribeServerReady();
 
         if (startupResult.type === "exit") {
+          runtimeProcessRef.current = null;
           throw new Error(
             `Preview process exited before a server became available. Exit code: ${startupResult.code}`,
           );
@@ -195,6 +268,7 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
             ? setupFailure.message
             : String(setupFailure);
 
+        stopActiveProcesses();
         terminalRef.current?.writeToTerminal(`[error] ${errorMessage}\r\n`);
 
         setSetupError(errorMessage);
@@ -203,7 +277,13 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
     }
 
     setupContainer();
-  }, [instance, templateData, isSetupComplete, isSetupInProgress]);
+  }, [
+    instance,
+    isSetupComplete,
+    isSetupInProgress,
+    stopActiveProcesses,
+    templateData,
+  ]);
 
   if (isLoading) {
     return (
@@ -329,17 +409,15 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
   }
 
   return (
-    <ResizablePanelGroup direction="vertical" className="h-full">
-      <ResizablePanel defaultSize={resolvedPreviewUrl ? 72 : 68} minSize={44}>
+    <div className="flex h-full flex-col">
+      <div className={resolvedPreviewUrl ? "min-h-0 flex-[2.6]" : "min-h-0 flex-[2.3]"}>
         {previewPanelContent}
-      </ResizablePanel>
-
-      <ResizableHandle className="bg-white/6" />
-
-      <ResizablePanel defaultSize={28} minSize={18}>
+      </div>
+      <div className="h-px bg-white/6" />
+      <div className="min-h-0 flex-1">
         {terminalPanelContent}
-      </ResizablePanel>
-    </ResizablePanelGroup>
+      </div>
+    </div>
   );
 };
 

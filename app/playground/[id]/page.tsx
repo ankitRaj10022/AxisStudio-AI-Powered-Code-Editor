@@ -43,11 +43,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
 import { TemplateFileTree } from "@/features/playground/components/playground-explorer";
 import { PlaygroundEditor } from "@/features/playground/components/playground-editor";
 import ToggleAI from "@/features/playground/components/toggle-ai";
@@ -739,27 +734,24 @@ const MainPlaygroundPage: React.FC = () => {
                 </div>
 
                 <div className="min-h-0 flex-1">
-                  <div className="hidden h-full lg:block">
-                    <ResizablePanelGroup
-                      direction="horizontal"
-                      className="h-full"
+                  <div className="hidden h-full lg:flex">
+                    <div
+                      className={cn(
+                        "min-h-0 min-w-0",
+                        isPreviewVisible ? "flex-[1.78]" : "flex-1",
+                      )}
                     >
-                      <ResizablePanel
-                        defaultSize={isPreviewVisible ? 64 : 100}
-                        minSize={48}
-                      >
                         {editorWorkspace}
-                      </ResizablePanel>
+                    </div>
 
-                      {isPreviewVisible ? (
-                        <>
-                          <ResizableHandle className="bg-white/6" />
-                          <ResizablePanel defaultSize={36} minSize={24}>
-                            {previewWorkspace}
-                          </ResizablePanel>
-                        </>
-                      ) : null}
-                    </ResizablePanelGroup>
+                    {isPreviewVisible ? (
+                      <>
+                        <div className="w-px bg-white/8" />
+                        <div className="min-h-0 min-w-[24rem] flex-1">
+                          {previewWorkspace}
+                        </div>
+                      </>
+                    ) : null}
                   </div>
 
                   <div className="hidden h-full md:flex lg:hidden flex-col">
