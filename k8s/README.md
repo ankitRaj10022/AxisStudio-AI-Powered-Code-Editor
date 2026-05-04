@@ -1,13 +1,15 @@
 # Kubernetes Deployment
 
-This directory contains a production deployment path for `axisStudio`.
+This directory contains deployment paths for `axisStudio`.
 
 ## Layout
 
 - `base/`
   - Namespace, Deployment, and Service
 - `overlays/production/`
-  - Production replica settings and ingress
+  - Generic production ingress-based overlay
+- `overlays/aws-eks/`
+  - AWS EKS overlay using an internet-facing Network Load Balancer service
 
 ## Required Kubernetes Secret
 
@@ -36,3 +38,11 @@ kubectl apply -k k8s/overlays/production
 ```
 
 Update `k8s/overlays/production/ingress.yaml` with your real host before applying manually.
+
+## AWS EKS Apply
+
+```bash
+kubectl apply -k k8s/overlays/aws-eks
+```
+
+The AWS EKS overlay exposes the app through a `LoadBalancer` service with AWS NLB annotations. Point your domain to the resulting load balancer hostname and make sure `NEXTAUTH_URL` matches the public URL you intend to use.

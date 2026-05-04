@@ -1,4 +1,4 @@
-name: Docker Build and Kubernetes Deploy
+name: AWS ECR Build and EKS Deploy
 
 on:
   push:
@@ -16,28 +16,76 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      id-token: write
     outputs:
       image_repository: ${{ steps.image.outputs.repository }}
       image_tag: ${{ steps.image.outputs.tag }}
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+
+      - name: Validate AWS build secrets
+        shell: bash
+        run: |
+          missing=()
+
+          for key in AWS_REGION ECR_REPOSITORY; do
+            if [ -z "${!key}" ]; then
+              missing+=("$key")
+            fi
+          done
+
+          if [ -z "$AWS_ROLE_TO_ASSUME" ] && { [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; }; then
+            missing+=("AWS_ROLE_TO_ASSUME or AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY")
+          fi
+
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "Missing GitHub secrets: ${missing[*]}"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials via OIDC
+        if: ${{ env.AWS_ROLE_TO_ASSUME != '' }}
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+
+      - name: Configure AWS credentials via access keys
+        if: ${{ env.AWS_ROLE_TO_ASSUME == '' }}
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Ensure ECR repository exists
+        shell: bash
+        run: |
+          if ! aws ecr describe-repositories --repository-names "$ECR_REPOSITORY" --region "$AWS_REGION" >/dev/null 2>&1; then
+            aws ecr create-repository \
+              --repository-name "$ECR_REPOSITORY" \
+              --image-scanning-configuration scanOnPush=true \
+              --image-tag-mutability MUTABLE \
+              --region "$AWS_REGION" >/dev/null
+          fi
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Resolve image coordinates
         id: image
         shell: bash
         run: |
-          owner="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
-          echo "repository=ghcr.io/${owner}/axisstudio" >> "$GITHUB_OUTPUT"
+          echo "repository=${{ steps.login-ecr.outputs.registry }}/${ECR_REPOSITORY}" >> "$GITHUB_OUTPUT"
           echo "tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push container image
         uses: docker/build-push-action@v6
@@ -55,7 +103,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read
+      id-token: write
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+      EKS_KUBECTL_ROLE_ARN: ${{ secrets.EKS_KUBECTL_ROLE_ARN }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -66,11 +121,9 @@ jobs:
       - name: Install kustomize
         uses: imranismail/setup-kustomize@v2
 
-      - name: Validate required deploy secrets
+      - name: Validate AWS deploy secrets
         shell: bash
         env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-          K8S_INGRESS_HOST: ${{ secrets.K8S_INGRESS_HOST }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
           AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
@@ -82,9 +135,10 @@ jobs:
           OLLAMA_MODEL: ${{ secrets.OLLAMA_MODEL }}
         run: |
           missing=()
+
           for key in \
-            KUBE_CONFIG \
-            K8S_INGRESS_HOST \
+            AWS_REGION \
+            EKS_CLUSTER_NAME \
             AUTH_SECRET \
             AUTH_GOOGLE_ID \
             AUTH_GOOGLE_SECRET \
@@ -100,19 +154,43 @@ jobs:
             fi
           done
 
+          if [ -z "$AWS_ROLE_TO_ASSUME" ] && { [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; }; then
+            missing+=("AWS_ROLE_TO_ASSUME or AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY")
+          fi
+
           if [ "${#missing[@]}" -gt 0 ]; then
             echo "Missing GitHub secrets: ${missing[*]}"
             exit 1
           fi
 
-      - name: Configure kubeconfig
+      - name: Configure AWS credentials via OIDC
+        if: ${{ env.AWS_ROLE_TO_ASSUME != '' }}
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+
+      - name: Configure AWS credentials via access keys
+        if: ${{ env.AWS_ROLE_TO_ASSUME == '' }}
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Update kubeconfig for EKS
         shell: bash
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         run: |
-          mkdir -p "$HOME/.kube"
-          printf "%s" "$KUBE_CONFIG" > "$HOME/.kube/config"
-          chmod 600 "$HOME/.kube/config"
+          if [ -n "$EKS_KUBECTL_ROLE_ARN" ]; then
+            aws eks update-kubeconfig \
+              --name "$EKS_CLUSTER_NAME" \
+              --region "$AWS_REGION" \
+              --role-arn "$EKS_KUBECTL_ROLE_ARN"
+          else
+            aws eks update-kubeconfig \
+              --name "$EKS_CLUSTER_NAME" \
+              --region "$AWS_REGION"
+          fi
 
       - name: Create namespace and application secret
         shell: bash
@@ -151,42 +229,24 @@ jobs:
             "${secret_args[@]}" \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Render production overlay
+      - name: Render AWS EKS overlay
         shell: bash
         env:
           IMAGE_REPOSITORY: ${{ needs.build.outputs.image_repository }}
           IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
-          K8S_INGRESS_HOST: ${{ secrets.K8S_INGRESS_HOST }}
         run: |
-          sed -i "s/axisstudio.example.com/${K8S_INGRESS_HOST}/g" k8s/overlays/production/ingress.yaml
-          cd k8s/overlays/production
+          cd k8s/overlays/aws-eks
           kustomize edit set image axisstudio="${IMAGE_REPOSITORY}:${IMAGE_TAG}"
 
       - name: Apply Kubernetes manifests
-        run: kubectl apply -k k8s/overlays/production
-
-      - name: Create GHCR pull secret
-        shell: bash
-        env:
-          GHCR_PULL_USERNAME: ${{ secrets.GHCR_PULL_USERNAME }}
-          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
-        run: |
-          if [ -z "$GHCR_PULL_USERNAME" ] || [ -z "$GHCR_PULL_TOKEN" ]; then
-            echo "GHCR pull credentials not provided. Skipping imagePullSecret creation."
-            exit 0
-          fi
-
-          kubectl create secret docker-registry ghcr-creds \
-            --namespace "${K8S_NAMESPACE}" \
-            --docker-server=ghcr.io \
-            --docker-username="$GHCR_PULL_USERNAME" \
-            --docker-password="$GHCR_PULL_TOKEN" \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-          kubectl patch deployment "${K8S_DEPLOYMENT}" \
-            --namespace "${K8S_NAMESPACE}" \
-            --type merge \
-            -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-creds"}]}}}}'
+        run: kubectl apply -k k8s/overlays/aws-eks
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/"${K8S_DEPLOYMENT}" --namespace "${K8S_NAMESPACE}" --timeout=300s
+
+      - name: Show service endpoint
+        shell: bash
+        run: |
+          kubectl get service "${K8S_DEPLOYMENT}" \
+            --namespace "${K8S_NAMESPACE}" \
+            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}{"\n"}'

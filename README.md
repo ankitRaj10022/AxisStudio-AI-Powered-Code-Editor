@@ -106,18 +106,20 @@ npm run db:studio
    `https://your-domain/api/auth/callback/google`
 5. Run `npm run db:push` against the production Neon database before the first production sign-in.
 
-## Docker and Kubernetes Deployment
+## Docker, GitHub Actions, and AWS EKS Deployment
 
 This repo now includes:
 
 - `Dockerfile` for a production Next.js standalone image
-- `.github/workflows/docker-k8s-deploy.yml` for GitHub Actions based image build and cluster deploy
+- `.github/workflows/docker-k8s-deploy.yml` for GitHub Actions based Amazon ECR build and Amazon EKS deploy
 - `k8s/base` and `k8s/overlays/production` manifests for Kubernetes rollout
+- `k8s/overlays/aws-eks` for AWS EKS rollout through an AWS Network Load Balancer
 
 ### GitHub Secrets Required
 
-- `KUBE_CONFIG`
-- `K8S_INGRESS_HOST`
+- `AWS_REGION`
+- `ECR_REPOSITORY`
+- `EKS_CLUSTER_NAME`
 - `AUTH_SECRET`
 - `AUTH_GOOGLE_ID`
 - `AUTH_GOOGLE_SECRET`
@@ -131,23 +133,40 @@ This repo now includes:
 Optional:
 
 - `OLLAMA_API_KEY`
-- `GHCR_PULL_USERNAME`
-- `GHCR_PULL_TOKEN`
+- `AWS_ROLE_TO_ASSUME`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `EKS_KUBECTL_ROLE_ARN`
 
 ### What the workflow does
 
 1. Builds the app into a Docker image
-2. Pushes the image to `ghcr.io`
+2. Pushes the image to Amazon ECR
 3. Creates or updates the `axisstudio-env` Kubernetes secret
-4. Applies the production manifests
+4. Updates kubeconfig for Amazon EKS
+5. Applies the AWS EKS manifests
 5. Waits for the deployment rollout to finish
 
 ### Notes
 
-- `KUBE_CONFIG` should contain the full kubeconfig file content.
-- If your `ghcr.io` package is private, add `GHCR_PULL_USERNAME` and `GHCR_PULL_TOKEN` so the workflow can create the pull secret for the cluster.
-- Update the production ingress hostname through the `K8S_INGRESS_HOST` GitHub secret.
+- Prefer `AWS_ROLE_TO_ASSUME` for GitHub OIDC-based AWS auth. If you do not use OIDC, provide `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` instead.
+- `ECR_REPOSITORY` is the private Amazon ECR repository name the workflow will create or reuse.
+- `EKS_CLUSTER_NAME` is the target cluster name for `aws eks update-kubeconfig`.
+- `EKS_KUBECTL_ROLE_ARN` is only needed when kubectl must assume a different role than the one used to authenticate GitHub Actions.
 - The app health probe is exposed at `/api/health`.
+
+## WSL Docker Workflow
+
+For local container work on Windows, use Docker Desktop with the WSL 2 backend and run Docker from your Linux shell.
+
+```bash
+wsl
+cd /mnt/c/Users/danny/Desktop/AxisStudio/axisStudio
+docker build -t axisstudio:local .
+docker run --rm -p 3000:3000 --env-file .env axisstudio:local
+```
+
+If you use VS Code, open the project inside WSL and run Docker commands there for a cleaner Linux-native workflow.
 
 ## Project Structure
 
