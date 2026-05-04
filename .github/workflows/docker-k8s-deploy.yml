@@ -88,26 +88,6 @@ jobs:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Verify ECR repository exists
-        shell: bash
-        run: |
-          set +e
-          output=$(aws ecr describe-repositories --repository-names "$ECR_REPOSITORY" --region "$AWS_REGION" 2>&1)
-          status=$?
-          set -e
-
-          if [ "$status" -eq 0 ]; then
-            exit 0
-          fi
-
-          if echo "$output" | grep -q "RepositoryNotFoundException"; then
-            echo "::error::ECR repository '$ECR_REPOSITORY' does not exist in region '$AWS_REGION'. Create it manually in AWS ECR, then rerun the workflow."
-            exit 1
-          fi
-
-          echo "::error::Unable to access ECR repository '$ECR_REPOSITORY': $output"
-          exit "$status"
-
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
