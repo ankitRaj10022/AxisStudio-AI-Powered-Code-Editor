@@ -1,8 +1,9 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { toast } from "sonner";
 import { axisAssets } from "@/lib/axis-assets";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -106,6 +107,13 @@ interface AIChatSidePanelProps {
   activeFileLanguage?: string;
   cursorPosition?: { line: number; column: number };
   theme?: "dark" | "light";
+}
+
+interface PersistedChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
 }
 
 type ChatMode = "chat" | "review" | "fix" | "optimize";
@@ -339,6 +347,38 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const loadPersistedMessages = useCallback(async () => {
+    try {
+      const response = await fetch("/api/chat?history=1&limit=100", {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load chat history: ${response.status}`);
+      }
+
+      const data = (await response.json()) as {
+        messages?: PersistedChatMessage[];
+      };
+
+      if (!Array.isArray(data.messages)) {
+        return;
+      }
+
+      setMessages(
+        data.messages.map((message) => ({
+          id: message.id,
+          role: message.role,
+          content: message.content,
+          timestamp: new Date(message.timestamp),
+        })),
+      );
+    } catch (error) {
+      console.error("Failed to load persisted chat history:", error);
+      toast.error("Failed to load saved AI chat history");
+    }
+  }, []);
+
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -356,6 +396,14 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
     }, 100);
     return () => clearTimeout(timeoutId);
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (!isOpen || !autoSave) {
+      return;
+    }
+
+    void loadPersistedMessages();
+  }, [autoSave, isOpen, loadPersistedMessages]);
 
   // Enhanced language detection with more file types
   const detectLanguage = (fileName: string, content: string): string => {
@@ -766,18 +814,25 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          clientMessage: input.trim(),
           message: contextualMessage,
           history: messages.slice(-10).map((msg) => ({
             role: msg.role,
             content: msg.content,
           })),
+          persist: autoSave,
           stream: streamResponse,
           mode: chatMode,
         }),
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as {
+          response: string;
+          timestamp?: string;
+          tokens?: number;
+          model?: string;
+        };
         const suggestions = generateCodeSuggestions(input.trim(), attachments);
 
         setMessages((prev) => [
@@ -785,7 +840,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
           {
             role: "assistant",
             content: data.response,
-            timestamp: new Date(),
+            timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
             suggestions: suggestions.length > 0 ? suggestions : undefined,
             id: Date.now().toString(),
             type: messageType,
@@ -847,6 +902,28 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
       await navigator.clipboard.writeText(code);
     } catch (err) {
       console.error("Failed to copy code:", err);
+    }
+  };
+
+  const clearMessages = async () => {
+    if (!autoSave) {
+      setMessages([]);
+      toast.success("Cleared local AI chat messages");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/chat", { method: "DELETE" });
+
+      if (!response.ok) {
+        throw new Error(`Failed to clear chat history: ${response.status}`);
+      }
+
+      setMessages([]);
+      toast.success("Cleared saved AI chat history");
+    } catch (error) {
+      console.error("Failed to clear persisted chat history:", error);
+      toast.error("Failed to clear saved AI chat history");
     }
   };
 
@@ -1024,7 +1101,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
                       <Download className="h-4 w-4 mr-2" />
                       Export Chat
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setMessages([])}>
+                    <DropdownMenuItem onClick={() => void clearMessages()}>
                       Clear All Messages
                     </DropdownMenuItem>
                   </DropdownMenuContent>

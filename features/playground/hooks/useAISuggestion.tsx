@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 
 interface AISuggestionsState {
   suggestion: string | null;
@@ -10,7 +10,7 @@ interface AISuggestionsState {
 
 interface UseAISuggestionsReturn extends AISuggestionsState {
   toggleEnabled: () => void;
-  fetchSuggestion: (type: string, editor: any) => Promise<void>;
+  fetchSuggestion: (type: string, editor: any, fileName?: string) => Promise<void>;
   acceptSuggestion: (editor: any, monaco: any) => void;
   rejectSuggestion: (editor: any) => void;
   clearSuggestion: (editor: any) => void;
@@ -30,9 +30,8 @@ export const useAISuggestions = (): UseAISuggestionsReturn => {
     setState((prev) => ({ ...prev, isEnabled: !prev.isEnabled }));
   }, []);
 
-  const fetchSuggestion = useCallback(async (type: string, editor: any) => {
+  const fetchSuggestion = useCallback(async (type: string, editor: any, fileName?: string) => {
     console.log("Fetching AI suggestion...");
-    console.log("AI Suggestions Enabled:", state.isEnabled);
     console.log("Editor Instance Available:", !!editor);
 
     // Use functional state update to get fresh state
@@ -66,6 +65,7 @@ export const useAISuggestions = (): UseAISuggestionsReturn => {
             cursorLine: cursorPosition.lineNumber - 1,
             cursorColumn: cursorPosition.column - 1,
             suggestionType: type,
+            fileName,
           };
           console.log("Request payload:", payload);
 
@@ -105,25 +105,14 @@ export const useAISuggestions = (): UseAISuggestionsReturn => {
 
       return newState;
     });
-  }, []); // Remove state.isEnabled from dependencies to prevent stale closures
+  }, []);
 
   const acceptSuggestion = useCallback(
-    (editor: any, monaco: any) => {
+    (editor: any, _monaco: any) => {
       setState((currentState) => {
-        if (!currentState.suggestion || !currentState.position || !editor || !monaco) {
+        if (!currentState.suggestion || !currentState.position) {
           return currentState;
         }
-
-        const { line, column } = currentState.position;
-        const sanitizedSuggestion = currentState.suggestion.replace(/^\d+:\s*/gm, "");
-
-        editor.executeEdits("", [
-          {
-            range: new monaco.Range(line, column, line, column),
-            text: sanitizedSuggestion,
-            forceMoveMarkers: true,
-          },
-        ]);
 
         // Clear decorations
         if (editor && currentState.decoration.length > 0) {

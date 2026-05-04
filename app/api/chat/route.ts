@@ -1,4 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { desc, eq } from "drizzle-orm";
+import { auth } from "@/auth";
+import { chatMessages } from "@/lib/database/schema";
+import { getDbOrNull } from "@/lib/db";
 import {
   getOllamaBaseUrl,
   getOllamaHeaders,
@@ -29,6 +33,81 @@ interface EnhancePromptRequest {
     language?: string;
     codeContent?: string;
   };
+}
+
+interface PersistedChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+}
+
+async function getAuthenticatedUserId() {
+  const session = await auth();
+  return session?.user?.id ?? null;
+}
+
+async function loadPersistedMessages(
+  limit: number,
+): Promise<{ messages: PersistedChatMessage[]; persisted: boolean }> {
+  const userId = await getAuthenticatedUserId();
+  const db = getDbOrNull();
+
+  if (!userId || !db) {
+    return { messages: [], persisted: false };
+  }
+
+  const rows = await db
+    .select({
+      id: chatMessages.id,
+      role: chatMessages.role,
+      content: chatMessages.content,
+      createdAt: chatMessages.createdAt,
+    })
+    .from(chatMessages)
+    .where(eq(chatMessages.userId, userId))
+    .orderBy(desc(chatMessages.createdAt))
+    .limit(limit);
+
+  return {
+    messages: rows
+      .reverse()
+      .filter(
+        (
+          row,
+        ): row is typeof row & {
+          role: "user" | "assistant";
+        } => row.role === "user" || row.role === "assistant",
+      )
+      .map((row) => ({
+        id: row.id,
+        role: row.role,
+        content: row.content,
+        timestamp: row.createdAt.toISOString(),
+      })),
+    persisted: true,
+  };
+}
+
+async function persistConversation(
+  userId: string,
+  messages: ChatMessage[],
+): Promise<boolean> {
+  const db = getDbOrNull();
+
+  if (!db || messages.length === 0) {
+    return false;
+  }
+
+  await db.insert(chatMessages).values(
+    messages.map((message) => ({
+      userId,
+      role: message.role,
+      content: message.content,
+    })),
+  );
+
+  return true;
 }
 
 async function generateAIResponse(messages: ChatMessage[]) {
@@ -148,7 +227,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ enhancedPrompt });
     }
 
-    const { message, history } = body;
+    const {
+      message,
+      history,
+      persist,
+      clientMessage,
+    }: {
+      message?: unknown;
+      history?: unknown;
+      persist?: unknown;
+      clientMessage?: unknown;
+    } = body;
 
     if (!message || typeof message !== "string") {
       return NextResponse.json(
@@ -173,8 +262,26 @@ export async function POST(req: NextRequest) {
       throw new Error("Empty response from AI model");
     }
 
+    const userId = await getAuthenticatedUserId();
+    const shouldPersist = persist !== false;
+    const persisted =
+      shouldPersist && userId
+        ? await persistConversation(userId, [
+            {
+              role: "user",
+              content:
+                typeof clientMessage === "string" && clientMessage.trim()
+                  ? clientMessage.trim()
+                  : message,
+            },
+            { role: "assistant", content: aiResponse },
+          ])
+        : false;
+
     return NextResponse.json({
       response: aiResponse,
+      model: getOllamaModel(),
+      persisted,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -192,10 +299,69 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const searchParams = req.nextUrl.searchParams;
+
+  if (searchParams.get("history") === "1") {
+    const rawLimit = Number.parseInt(searchParams.get("limit") ?? "50", 10);
+    const limit = Number.isFinite(rawLimit)
+      ? Math.min(Math.max(rawLimit, 1), 200)
+      : 50;
+
+    try {
+      const { messages, persisted } = await loadPersistedMessages(limit);
+      return NextResponse.json({
+        messages,
+        persisted,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Error loading persisted chat messages:", error);
+      return NextResponse.json(
+        {
+          error: "Failed to load chat history",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 500 },
+      );
+    }
+  }
+
   return NextResponse.json({
     status: "AI Chat API is running",
     timestamp: new Date().toISOString(),
     info: "Use POST method to send chat messages or enhance prompts",
   });
+}
+
+export async function DELETE() {
+  try {
+    const userId = await getAuthenticatedUserId();
+    const db = getDbOrNull();
+
+    if (!userId || !db) {
+      return NextResponse.json({
+        success: true,
+        persisted: false,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    await db.delete(chatMessages).where(eq(chatMessages.userId, userId));
+
+    return NextResponse.json({
+      success: true,
+      persisted: true,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Error clearing persisted chat messages:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to clear chat history",
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
+    );
+  }
 }

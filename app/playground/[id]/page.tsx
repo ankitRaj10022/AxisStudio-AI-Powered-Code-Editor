@@ -58,9 +58,70 @@ import { usePlayground } from "@/features/playground/hooks/usePlayground";
 import { useAISuggestions } from "@/features/playground/hooks/useAISuggestion";
 import { useWebContainer } from "@/features/webcontainers/hooks/useWebContainer";
 import WebContainerPreview from "@/features/webcontainers/components/webcontainer-preveiw";
-import { findFilePath } from "@/features/playground/libs";
+import { findFilePath, generateFileId } from "@/features/playground/libs";
 import { axisAssets } from "@/lib/axis-assets";
 import { cn } from "@/lib/utils";
+
+interface CursorPosition {
+  line: number;
+  column: number;
+}
+
+function getFileLabel(file: Pick<TemplateFile, "filename" | "fileExtension">) {
+  return file.fileExtension
+    ? `${file.filename}.${file.fileExtension}`
+    : file.filename;
+}
+
+function findTemplateFileByName(
+  folder: TemplateFolder,
+  targetFileName: string,
+): TemplateFile | null {
+  for (const item of folder.items) {
+    if ("folderName" in item) {
+      const nestedMatch = findTemplateFileByName(item, targetFileName);
+      if (nestedMatch) {
+        return nestedMatch;
+      }
+      continue;
+    }
+
+    if (getFileLabel(item) === targetFileName) {
+      return item;
+    }
+  }
+
+  return null;
+}
+
+function insertTextAtPosition(
+  content: string,
+  insertion: string,
+  position?: CursorPosition,
+) {
+  if (!position) {
+    return content ? `${content}\n${insertion}` : insertion;
+  }
+
+  const lines = content.split("\n");
+  const targetLineIndex = Math.min(
+    Math.max(position.line - 1, 0),
+    Math.max(lines.length - 1, 0),
+  );
+  const targetLine = lines[targetLineIndex] ?? "";
+  const targetColumn = Math.min(
+    Math.max(position.column - 1, 0),
+    targetLine.length,
+  );
+
+  let offset = 0;
+  for (let index = 0; index < targetLineIndex; index += 1) {
+    offset += (lines[index]?.length ?? 0) + 1;
+  }
+  offset += targetColumn;
+
+  return `${content.slice(0, offset)}${insertion}${content.slice(offset)}`;
+}
 
 const MainPlaygroundPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -75,6 +136,9 @@ const MainPlaygroundPage: React.FC = () => {
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
   const [compactPane, setCompactPane] = useState<"editor" | "preview">(
     "editor",
+  );
+  const [cursorPosition, setCursorPosition] = useState<CursorPosition | null>(
+    null,
   );
 
   const { playgroundData, templateData, isLoading, error, saveTemplateData } =
@@ -202,6 +266,72 @@ const MainPlaygroundPage: React.FC = () => {
   const handleFileSelect = (file: TemplateFile) => {
     openFile(file);
   };
+
+  const handleInsertCodeFromAI = useCallback(
+    (
+      code: string,
+      fileName?: string,
+      position?: { line: number; column: number },
+    ) => {
+      if (!templateData) {
+        toast.error("Workspace is not ready for AI code insertion");
+        return;
+      }
+
+      const targetFileName = fileName?.trim();
+      let targetFile =
+        (targetFileName
+          ? openFiles.find((file) => getFileLabel(file) === targetFileName)
+          : undefined) ?? activeFile;
+
+      if (!targetFile && targetFileName) {
+        const matchingTemplateFile = findTemplateFileByName(
+          templateData,
+          targetFileName,
+        );
+
+        if (matchingTemplateFile) {
+          openFile(matchingTemplateFile);
+          targetFile = useFileExplorer
+            .getState()
+            .openFiles.find(
+              (file) => getFileLabel(file) === getFileLabel(matchingTemplateFile),
+            );
+        }
+      }
+
+      if (!targetFile) {
+        toast.error("Open a file before inserting AI-generated code");
+        return;
+      }
+
+      const targetFileId =
+        "id" in targetFile
+          ? targetFile.id
+          : generateFileId(targetFile, templateData);
+      const resolvedPosition =
+        position ??
+        (activeFile?.id === targetFileId ? cursorPosition ?? undefined : undefined);
+      const nextContent = insertTextAtPosition(
+        targetFile.content || "",
+        code,
+        resolvedPosition,
+      );
+
+      updateFileContent(targetFileId, nextContent);
+      setActiveFileId(targetFileId);
+      toast.success(`Inserted AI code into ${getFileLabel(targetFile)}`);
+    },
+    [
+      activeFile,
+      cursorPosition,
+      openFile,
+      openFiles,
+      setActiveFileId,
+      templateData,
+      updateFileContent,
+    ],
+  );
 
   const handleSave = useCallback(
     async (fileId?: string) => {
@@ -340,9 +470,10 @@ const MainPlaygroundPage: React.FC = () => {
             aiSuggestions.acceptSuggestion(editor, monaco)
           }
           onRejectSuggestion={(editor) => aiSuggestions.rejectSuggestion(editor)}
-          onTriggerSuggestion={(type, editor) =>
-            aiSuggestions.fetchSuggestion(type, editor)
+          onTriggerSuggestion={(type, editor, fileName) =>
+            aiSuggestions.fetchSuggestion(type, editor, fileName)
           }
+          onCursorPositionChange={setCursorPosition}
         />
       ) : (
         <div className="flex h-full items-center justify-center bg-[#0f1117] p-6 sm:p-8">
@@ -580,6 +711,11 @@ const MainPlaygroundPage: React.FC = () => {
                     isEnabled={aiSuggestions.isEnabled}
                     onToggle={aiSuggestions.toggleEnabled}
                     suggestionLoading={aiSuggestions.isLoading}
+                    activeFileName={activeFile ? activeFileLabel : undefined}
+                    activeFileContent={activeFile?.content}
+                    activeFileLanguage={activeFile?.fileExtension}
+                    cursorPosition={cursorPosition}
+                    onInsertCode={handleInsertCodeFromAI}
                   />
 
                   <DropdownMenu>
