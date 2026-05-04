@@ -111,14 +111,13 @@ npm run db:studio
 This repo now includes:
 
 - `Dockerfile` for a production Next.js standalone image
-- `.github/workflows/docker-k8s-deploy.yml` for GitHub Actions based Amazon ECR build and Amazon EKS deploy
+- `.github/workflows/docker-k8s-deploy.yml` for GitHub Actions based GitHub Container Registry build and Amazon EKS deploy
 - `k8s/base` and `k8s/overlays/production` manifests for Kubernetes rollout
 - `k8s/overlays/aws-eks` for AWS EKS rollout through an AWS Network Load Balancer
 
 ### GitHub Secrets Required
 
 - `AWS_REGION`
-- `ECR_REPOSITORY`
 - `EKS_CLUSTER_NAME`
 - `AUTH_SECRET`
 - `AUTH_GOOGLE_ID`
@@ -137,22 +136,26 @@ Optional:
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `EKS_KUBECTL_ROLE_ARN`
+- `GHCR_PULL_USERNAME`
+- `GHCR_PULL_TOKEN`
 
 ### What the workflow does
 
 1. Builds the app into a Docker image
-2. Pushes the image to Amazon ECR
+2. Pushes the image to GitHub Container Registry as `ghcr.io/<owner>/axisstudio`
 3. Creates or updates the `axisstudio-env` Kubernetes secret
 4. Updates kubeconfig for Amazon EKS
 5. Applies the AWS EKS manifests
-5. Waits for the deployment rollout to finish
+6. Attaches a GHCR `imagePullSecret` when GHCR pull credentials are configured
+7. Waits for the deployment rollout to finish
 
 ### Notes
 
 - Prefer `AWS_ROLE_TO_ASSUME` for GitHub OIDC-based AWS auth. If you do not use OIDC, provide `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` instead.
-- `ECR_REPOSITORY` is the private Amazon ECR repository name the workflow will create or reuse.
 - `EKS_CLUSTER_NAME` is the target cluster name for `aws eks update-kubeconfig`.
 - `EKS_KUBECTL_ROLE_ARN` is only needed when kubectl must assume a different role than the one used to authenticate GitHub Actions.
+- If the GHCR package is private, add `GHCR_PULL_USERNAME` and `GHCR_PULL_TOKEN` so the workflow can create `ghcr-pull-secret` in the cluster.
+- If the GHCR package is public, the GHCR pull secrets are not required.
 - The app health probe is exposed at `/api/health`.
 
 ## WSL Docker Workflow

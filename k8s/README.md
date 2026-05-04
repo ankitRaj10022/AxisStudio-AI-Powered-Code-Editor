@@ -31,6 +31,11 @@ Optional key:
 
 - `OLLAMA_API_KEY`
 
+Optional image pull keys:
+
+- `GHCR_PULL_USERNAME`
+- `GHCR_PULL_TOKEN`
+
 ## Local Apply
 
 ```bash
@@ -46,3 +51,5 @@ kubectl apply -k k8s/overlays/aws-eks
 ```
 
 The AWS EKS overlay exposes the app through a `LoadBalancer` service with AWS NLB annotations. Point your domain to the resulting load balancer hostname and make sure `NEXTAUTH_URL` matches the public URL you intend to use.
+
+If the container image in GitHub Container Registry is private, create a `ghcr-pull-secret` in the namespace or let the GitHub Actions workflow create it from `GHCR_PULL_USERNAME` and `GHCR_PULL_TOKEN`.
