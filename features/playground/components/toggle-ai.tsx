@@ -95,12 +95,12 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
     } catch (error) {
       console.error("Failed to load Ollama status:", error);
       setOllamaStatus({
-        baseUrl: "http://localhost:11434/api",
-        model: "codellama:latest",
+        baseUrl: "https://ollama.com/api",
+        model: "qwen3-coder-next",
         reachable: false,
         modelAvailable: false,
         availableModels: [],
-        message: "Failed to load the local Ollama runtime status.",
+        message: "Failed to load the configured Ollama service status.",
       });
     } finally {
       setIsCheckingOllama(false);
@@ -199,7 +199,7 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
                     Ollama Runtime
                   </div>
                   <div className="mt-1 text-sm font-medium text-foreground">
-                    {ollamaStatus?.model || "codellama:latest"}
+                    {ollamaStatus?.model || "qwen3-coder-next"}
                   </div>
                 </div>
 
@@ -250,22 +250,23 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
               </div>
 
               <p className="mt-3 text-xs leading-5 text-muted-foreground">
-                {ollamaStatus?.message || "Checking the local Ollama runtime."}
+                {ollamaStatus?.message ||
+                  "Checking the configured Ollama service."}
               </p>
 
               {ollamaStatus &&
               !ollamaStatus.modelAvailable &&
               ollamaStatus.availableModels.length > 0 ? (
                 <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
-                  Available locally:{" "}
+                  Available models:{" "}
                   {ollamaStatus.availableModels.slice(0, 3).join(", ")}
                 </p>
               ) : null}
 
               {isOllamaReady === false ? (
                 <p className="mt-2 text-[11px] leading-5 text-amber-600 dark:text-amber-300">
-                  If Codellama lives in X:\Ollama, start Ollama with
-                  OLLAMA_MODELS=X:\Ollama before opening AI chat.
+                  Check `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, and `OLLAMA_API_KEY`
+                  before opening AI chat.
                 </p>
               ) : null}
             </div>

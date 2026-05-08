@@ -883,7 +883,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
         {
           role: "assistant",
           content:
-            "Unable to reach the configured Ollama service. Start Ollama locally, confirm codellama:latest is available, and try again.",
+            "Unable to reach the configured Ollama service. Check OLLAMA_BASE_URL, OLLAMA_MODEL, and OLLAMA_API_KEY, then try again.",
           timestamp: new Date(),
           id: Date.now().toString(),
         },

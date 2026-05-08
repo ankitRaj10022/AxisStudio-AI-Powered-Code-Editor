@@ -1,6 +1,7 @@
-# Kubernetes Deployment
+# Optional Kubernetes Manifests
 
-This directory contains deployment paths for `axisStudio`.
+This directory contains optional self-hosting manifests for `axisStudio`.
+The primary production deployment path for this repo is Vercel, not Kubernetes.
 
 ## Layout
 
@@ -8,8 +9,6 @@ This directory contains deployment paths for `axisStudio`.
   - Namespace, Deployment, and Service
 - `overlays/production/`
   - Generic production ingress-based overlay
-- `overlays/aws-eks/`
-  - AWS EKS overlay using an internet-facing Network Load Balancer service
 
 ## Required Kubernetes Secret
 
@@ -31,11 +30,6 @@ Optional key:
 
 - `OLLAMA_API_KEY`
 
-Optional image pull keys:
-
-- `GHCR_PULL_USERNAME`
-- `GHCR_PULL_TOKEN`
-
 ## Local Apply
 
 ```bash
@@ -43,13 +37,3 @@ kubectl apply -k k8s/overlays/production
 ```
 
 Update `k8s/overlays/production/ingress.yaml` with your real host before applying manually.
-
-## AWS EKS Apply
-
-```bash
-kubectl apply -k k8s/overlays/aws-eks
-```
-
-The AWS EKS overlay exposes the app through a `LoadBalancer` service with AWS NLB annotations. Point your domain to the resulting load balancer hostname and make sure `NEXTAUTH_URL` matches the public URL you intend to use.
-
-If the container image in GitHub Container Registry is private, create a `ghcr-pull-secret` in the namespace or let the GitHub Actions workflow create it from `GHCR_PULL_USERNAME` and `GHCR_PULL_TOKEN`.

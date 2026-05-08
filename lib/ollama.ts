@@ -1,5 +1,5 @@
-const DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434/api";
-const DEFAULT_OLLAMA_MODEL = "codellama:latest";
+const DEFAULT_OLLAMA_BASE_URL = "https://ollama.com/api";
+const DEFAULT_OLLAMA_MODEL = "qwen3-coder-next";
 const DEFAULT_OLLAMA_TIMEOUT_MS = 15000;
 const DEFAULT_OLLAMA_HEALTH_TIMEOUT_MS = 3000;
 
@@ -64,6 +64,10 @@ function normalizeModelName(name: string) {
   return name.trim().toLowerCase();
 }
 
+function isCloudOllamaBaseUrl(baseUrl: string) {
+  return /^https:\/\/ollama\.com\/api(?:\/)?$/i.test(baseUrl.trim());
+}
+
 function getOllamaModelCandidates(model: string) {
   const normalizedModel = normalizeModelName(model);
   const candidates = new Set<string>();
@@ -85,7 +89,19 @@ function getOllamaModelCandidates(model: string) {
 }
 
 function createConnectionHelp(baseUrl: string, model: string) {
+  if (isCloudOllamaBaseUrl(baseUrl)) {
+    return `Set OLLAMA_API_KEY and confirm "${model}" is available for your Ollama Cloud account at ${baseUrl}.`;
+  }
+
   return `Start the Ollama app or run "ollama serve", then confirm "${model}" is available at ${baseUrl}.`;
+}
+
+function createModelAvailabilityHelp(baseUrl: string, model: string) {
+  if (isCloudOllamaBaseUrl(baseUrl)) {
+    return `Confirm "${model}" is enabled for your Ollama Cloud account at ${baseUrl}.`;
+  }
+
+  return `Run "ollama pull ${model}".`;
 }
 
 function parseOllamaErrorPayload(payload: unknown) {
@@ -198,7 +214,7 @@ export async function getOllamaStatus({
       availableModels,
       message: modelAvailable
         ? `Connected to Ollama model "${model}".`
-        : `Ollama is running, but model "${model}" is not installed. Run "ollama pull ${model}".`,
+        : `Ollama is reachable, but model "${model}" is not available. ${createModelAvailabilityHelp(baseUrl, model)}`,
     };
   } catch (error) {
     clearTimeout(timeoutId);
@@ -254,7 +270,7 @@ export async function generateWithOllama({
         /model.*(not found|missing|pull)/i.test(errorMessage)
       ) {
         throw new OllamaError(
-          `Ollama is running, but model "${model}" is not installed. Run "ollama pull ${model}".`,
+          `Ollama is reachable, but model "${model}" is not available. ${createModelAvailabilityHelp(baseUrl, model)}`,
           503,
         );
       }
