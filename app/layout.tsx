@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/providers/theme-providers";
-import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
-import { Toaster } from "@/components/ui/sonner";
+import { AppProviders } from "@/components/providers/app-providers";
 import { logDatabaseError } from "@/lib/database-error";
 import { isDynamicServerError } from "next/dist/client/components/hooks-server-context";
 
@@ -44,24 +42,18 @@ export default async function RootLayout({
     logDatabaseError("RootLayout.auth", error);
   }
   return (
-    <SessionProvider session={session}>
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={`${sans.variable} ${mono.variable} ${sans.className} antialiased`}
-        >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${sans.variable} ${mono.variable}`}
+    >
+      <body className={`${sans.className} antialiased`}>
+        <AppProviders session={session}>
             <div className="flex flex-col min-h-screen">
-              <Toaster />
               <div className="flex-1">{children}</div>
             </div>
-          </ThemeProvider>
-        </body>
-      </html>
-    </SessionProvider>
+        </AppProviders>
+      </body>
+    </html>
   );
 }

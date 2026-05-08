@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/:path*",
+        source: "/playground/:path*",
         headers: [
           {
             key: "Cross-Origin-Opener-Policy",
