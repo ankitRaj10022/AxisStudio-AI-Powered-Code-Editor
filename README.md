@@ -1,4 +1,4 @@
-# axisStudio - AI-Powered Web IDE
+# AxisStudio - AI-Powered Web IDE
 
 ![axisStudio Thumbnail](public\axisstudio\readme\AxisStudio-Thumbnail.png)
 
