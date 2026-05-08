@@ -4,6 +4,8 @@
 
 `axisStudio` is a browser IDE built with Next.js App Router, WebContainers, Monaco Editor, Auth.js, Neon Postgres, Drizzle ORM, and Ollama-compatible AI endpoints. It gives you playground creation, a live preview runtime, file management, AI chat, and inline code suggestions in one workspace.
 
+Live production URL: `https://axisstudio-codeeditor.vercel.app/`
+
 ## Features
 
 - OAuth login with Google and GitHub via Auth.js
@@ -138,6 +140,9 @@ npm run db:studio
 
 The supported production path is direct Git-based deployment through Vercel.
 
+Current production deployment:
+`https://axisstudio-codeeditor.vercel.app/`
+
 1. Import the GitHub repository into Vercel.
 2. Create a Neon Postgres database from the Vercel Marketplace, or provide your existing production `POSTGRES_URL`.
 3. Add these production environment variables in Vercel:
@@ -146,8 +151,8 @@ The supported production path is direct Git-based deployment through Vercel.
    `OLLAMA_BASE_URL=https://ollama.com/api`
    `OLLAMA_MODEL=qwen3-coder-next`
 5. Update the GitHub and Google OAuth callback URLs:
-   `https://your-domain/api/auth/callback/github`
-   `https://your-domain/api/auth/callback/google`
+   `https://axisstudio-codeeditor.vercel.app/api/auth/callback/github`
+   `https://axisstudio-codeeditor.vercel.app/api/auth/callback/google`
 6. Run `npm run db:push` against the production database before the first production sign-in.
 7. Push to `main` and let Vercel deploy directly from Git.
 
