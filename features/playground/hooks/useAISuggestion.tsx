@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 interface AISuggestionsState {
   suggestion: string | null;
@@ -17,6 +17,10 @@ interface UseAISuggestionsReturn extends AISuggestionsState {
 }
 
 export const useAISuggestions = (): UseAISuggestionsReturn => {
+  const serviceBackoffUntilRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const requestIdRef = useRef(0);
+  const isEnabledRef = useRef(true);
   const [state, setState] = useState<AISuggestionsState>({
     suggestion: null,
     isLoading: false,
@@ -24,6 +28,16 @@ export const useAISuggestions = (): UseAISuggestionsReturn => {
     decoration: [],
     isEnabled: true,
   });
+
+  useEffect(() => {
+    isEnabledRef.current = state.isEnabled;
+  }, [state.isEnabled]);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const toggleEnabled = useCallback(() => {
     console.log("Toggling AI suggestions");
@@ -34,77 +48,104 @@ export const useAISuggestions = (): UseAISuggestionsReturn => {
     console.log("Fetching AI suggestion...");
     console.log("Editor Instance Available:", !!editor);
 
-    // Use functional state update to get fresh state
-    setState((currentState) => {
-      if (!currentState.isEnabled) {
-        console.warn("AI suggestions are disabled.");
-        return currentState;
-      }
+    if (!isEnabledRef.current) {
+      console.warn("AI suggestions are disabled.");
+      return;
+    }
 
-      if (!editor) {
-        console.warn("Editor instance is not available.");
-        return currentState;
-      }
+    if (!editor) {
+      console.warn("Editor instance is not available.");
+      return;
+    }
 
-      const model = editor.getModel();
-      const cursorPosition = editor.getPosition();
+    if (Date.now() < serviceBackoffUntilRef.current) {
+      return;
+    }
 
-      if (!model || !cursorPosition) {
-        console.warn("Editor model or cursor position is not available.");
-        return currentState;
-      }
+    const model = editor.getModel();
+    const cursorPosition = editor.getPosition();
 
-      // Set loading state immediately
-      const newState = { ...currentState, isLoading: true };
+    if (!model || !cursorPosition) {
+      console.warn("Editor model or cursor position is not available.");
+      return;
+    }
 
-      // Perform the async operation
-      (async () => {
-        try {
-          const payload = {
-            fileContent: model.getValue(),
-            cursorLine: cursorPosition.lineNumber - 1,
-            cursorColumn: cursorPosition.column - 1,
-            suggestionType: type,
-            fileName,
-          };
-          console.log("Request payload:", payload);
+    const requestId = ++requestIdRef.current;
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    setState((prev) => ({ ...prev, isLoading: true }));
 
-          const response = await fetch("/api/code-suggestion", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
+    try {
+      const payload = {
+        fileContent: model.getValue(),
+        cursorLine: cursorPosition.lineNumber - 1,
+        cursorColumn: cursorPosition.column - 1,
+        suggestionType: type,
+        fileName,
+      };
+      console.log("Request payload:", payload);
 
-          if (!response.ok) {
-            throw new Error(`API responded with status ${response.status}`);
-          }
+      const response = await fetch("/api/code-suggestion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
 
-          const data = await response.json();
-          console.log("API response:", data);
-
-          if (data.suggestion) {
-            const suggestionText = data.suggestion.trim();
-            setState((prev) => ({
-              ...prev,
-              suggestion: suggestionText,
-              position: {
-                line: cursorPosition.lineNumber,
-                column: cursorPosition.column,
-              },
-              isLoading: false,
-            }));
-          } else {
-            console.warn("No suggestion received from API.");
-            setState((prev) => ({ ...prev, isLoading: false }));
-          }
-        } catch (error) {
-          console.error("Error fetching code suggestion:", error);
-          setState((prev) => ({ ...prev, isLoading: false }));
+      if (!response.ok) {
+        if (response.status === 503 || response.status === 504) {
+          serviceBackoffUntilRef.current = Date.now() + 10000;
         }
-      })();
 
-      return newState;
-    });
+        const errorPayload = (await response.json().catch(() => null)) as {
+          message?: string;
+        } | null;
+
+        throw new Error(
+          errorPayload?.message ||
+            `API responded with status ${response.status}`,
+        );
+      }
+
+      const data = await response.json();
+      console.log("API response:", data);
+
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+
+      if (data.suggestion) {
+        const suggestionText = data.suggestion.trim();
+        serviceBackoffUntilRef.current = 0;
+        setState((prev) => ({
+          ...prev,
+          suggestion: suggestionText,
+          position: {
+            line: cursorPosition.lineNumber,
+            column: cursorPosition.column,
+          },
+          isLoading: false,
+        }));
+      } else {
+        console.warn("No suggestion received from API.");
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    } catch (error) {
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      console.error("Error fetching code suggestion:", error);
+      if (requestId === requestIdRef.current) {
+          serviceBackoffUntilRef.current = Date.now() + 10000;
+          setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
+    }
   }, []);
 
   const acceptSuggestion = useCallback(

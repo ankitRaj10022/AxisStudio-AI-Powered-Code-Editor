@@ -1,1 +1,873 @@
-^C
+[getAllPlaygroundForUser] Failed query: select "playgrounds"."id", "playgrounds"."title", "playgrounds"."description", "playgrounds"."template", "playgrounds"."created_at", "playgrounds"."updated_at", "playgrounds"."user_id", "users"."id", "users"."name", "users"."email", "users"."email_verified", "users"."image", "users"."role", "users"."created_at", "users"."updated_at", "star_marks"."is_marked" from "playgrounds" inner join "users" on "playgrounds"."user_id" = "users"."id" left join "star_marks" on ("star_marks"."playground_id" = "playgrounds"."id" and "star_marks"."user_id" = $1) where "playgrounds"."user_id" = $2 order by "playgrounds"."updated_at" desc, "playgrounds"."created_at" desc
+params: f155ca69-cb59-4f41-8b81-650d0ba4d3d7,f155ca69-cb59-4f41-8b81-650d0ba4d3d7
+ ⨯ upstream image response timed out for https://avatars.githubusercontent.com/u/77633894?v=4
+[Error: "url" parameter is valid but upstream response timed out] {
+  statusCode: 504
+}
+Error loading persisted chat messages: Error: Failed query: select "id", "role", "content", "created_at" from "chat_messages" where "chat_messages"."user_id" = $1 order by "chat_messages"."created_at" desc limit $2
+params: f155ca69-cb59-4f41-8b81-650d0ba4d3d7,100
+    at async loadPersistedMessages (app\api\chat\route.ts:60:16)
+    at async GET (app\api\chat\route.ts:270:39)
+  58 |   }
+  59 |
+> 60 |   const rows = await db
+     |                ^
+  61 |     .select({
+  62 |       id: chatMessages.id,
+  63 |       role: chatMessages.role, {
+  query: 'select "id", "role", "content", "created_at" from "chat_messages" where "chat_messages"."user_id" = $1 order by "chat_messages"."created_at" desc limit $2',
+  params: [Array],
+  [cause]: Error [NeonDbError]: Error connecting to database: TypeError: fetch failed
+      at async loadPersistedMessages (app\api\chat\route.ts:60:16)
+      at async GET (app\api\chat\route.ts:270:39)
+    58 |   }
+    59 |
+  > 60 |   const rows = await db
+       |                ^
+    61 |     .select({
+    62 |       id: chatMessages.id,
+    63 |       role: chatMessages.role, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: [TypeError: fetch failed] {
+      [cause]: [Error [ConnectTimeoutError]: Connect Timeout Error (attempted addresses: 2a05:d014:d70:822:80ae:fda3:b19f:7c8:443, 52.29.229.153:443, 2a05:d014:d70:811:35f4:41f6:293e:8f29:443, 35.157.70.52:443, 2a05:d014:d70:80e:cd1e:657b:af77:3ef1:443, 3.127.101.230:443, timeout: 10000ms)] {
+        code: 'UND_ERR_CONNECT_TIMEOUT'
+      }
+    }
+  }
+}
+Error loading persisted chat messages: Error: Failed query: select "id", "role", "content", "created_at" from "chat_messages" where "chat_messages"."user_id" = $1 order by "chat_messages"."created_at" desc limit $2
+params: f155ca69-cb59-4f41-8b81-650d0ba4d3d7,100
+    at async loadPersistedMessages (app\api\chat\route.ts:60:16)
+    at async GET (app\api\chat\route.ts:270:39)
+  58 |   }
+  59 |
+> 60 |   const rows = await db
+     |                ^
+  61 |     .select({
+  62 |       id: chatMessages.id,
+  63 |       role: chatMessages.role, {
+  query: 'select "id", "role", "content", "created_at" from "chat_messages" where "chat_messages"."user_id" = $1 order by "chat_messages"."created_at" desc limit $2',
+  params: [Array],
+  [cause]: Error [NeonDbError]: Error connecting to database: TypeError: fetch failed
+      at async loadPersistedMessages (app\api\chat\route.ts:60:16)
+      at async GET (app\api\chat\route.ts:270:39)
+    58 |   }
+    59 |
+  > 60 |   const rows = await db
+       |                ^
+    61 |     .select({
+    62 |       id: chatMessages.id,
+    63 |       role: chatMessages.role, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: [TypeError: fetch failed] {
+      [cause]: [Error [ConnectTimeoutError]: Connect Timeout Error (attempted addresses: 2a05:d014:d70:822:80ae:fda3:b19f:7c8:443, 52.29.229.153:443, 2a05:d014:d70:811:35f4:41f6:293e:8f29:443, 35.157.70.52:443, 2a05:d014:d70:80e:cd1e:657b:af77:3ef1:443, 3.127.101.230:443, timeout: 10000ms)] {
+        code: 'UND_ERR_CONNECT_TIMEOUT'
+      }
+    }
+  }
+}
+Error in AI chat route: Error: Failed query: insert into "chat_messages" ("id", "user_id", "role", "content", "created_at") values ($1, $2, $3, $4, default), ($5, $6, $7, $8, default)
+params: bf1d2695-7c7f-43a3-b622-4cceef86aa06,f155ca69-cb59-4f41-8b81-650d0ba4d3d7,user,Review my React component for performance,66f9aced-2f91-47a5-b04f-60c8a1445a3d,f155ca69-cb59-4f41-8b81-650d0ba4d3d7,assistant,To review your React component for performance, we'll need to check its implementation and identify any potential bottlenecks or inefficiencies. Here are some steps you can take:
+
+1. Inspect the component's code: Look at the code of your React component and make sure it is efficient and follows best practices. For example, use functional components instead of class components whenever possible, and use the `useCallback` hook to memoize expensive computations.
+2. Use the browser's performance tools: Chrome DevTools provide a built-in profiler that can help you identify performance issues in your component. You can use this tool to measure the time it takes for your component to render, and identify any bottlenecks or slow operations.
+3. Test the component with different data sets: Test your component with different sizes of data to see how it performs under different conditions. This will help you identify whether the component is able to handle large data sets efficiently.
+4. Optimize the component's rendering: If your component has a lot of nested elements, consider using a virtual DOM library like React's `React.memo` or `react-virtualized`. These libraries can help improve performance by only re-rendering the necessary parts of the component instead of the entire tree.
+5. Use memoization: Memoization is a technique that allows you to cache the results of expensive computations so they don't have to be recalculated every time the component renders. You can use React's `useMemo` hook or a library like `react-use-memo` to implement memoization in your component.
+6. Avoid unnecessary updates: Make sure your component is not updating unnecessarily, as this can cause performance issues. Use the `shouldComponentUpdate` lifecycle method to control when your component re-renders based on changes in its props or state.
+7. Use lazy loading: If your component loads data asynchronously, consider using lazy loading to only load the necessary data when it is needed. This can help reduce the amount of data that needs to be loaded at once and improve performance.
+
+By following these steps, you can identify and optimize performance issues in your React component, making it more efficient and responsive for your users.
+    at async persistConversation (app\api\chat\route.ts:102:3)
+    at async POST (app\api\chat\route.ts:224:11)
+  100 |   }
+  101 |
+> 102 |   await db.insert(chatMessages).values(
+      |   ^
+  103 |     messages.map((message) => ({
+  104 |       userId,
+  105 |       role: message.role, {
+  query: 'insert into "chat_messages" ("id", "user_id", "role", "content", "created_at") values ($1, $2, $3, $4, default), ($5, $6, $7, $8, default)',
+  params: [Array],
+  [cause]: Error [NeonDbError]: Error connecting to database: TypeError: fetch failed
+      at async persistConversation (app\api\chat\route.ts:102:3)
+      at async POST (app\api\chat\route.ts:224:11)
+    100 |   }
+    101 |
+  > 102 |   await db.insert(chatMessages).values(
+        |   ^
+    103 |     messages.map((message) => ({
+    104 |       userId,
+    105 |       role: message.role, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: [TypeError: fetch failed] {
+      [cause]: [Error [ConnectTimeoutError]: Connect Timeout Error (attempted addresses: 2a05:d014:d70:822:80ae:fda3:b19f:7c8:443, 52.29.229.153:443, 2a05:d014:d70:811:35f4:41f6:293e:8f29:443, 35.157.70.52:443, 2a05:d014:d70:80e:cd1e:657b:af77:3ef1:443, 3.127.101.230:443, timeout: 10000ms)] {
+        code: 'UND_ERR_CONNECT_TIMEOUT'
+      }
+    }
+  }
+}
+Error loading persisted chat messages: Error: Failed query: select "id", "role", "content", "created_at" from "chat_messages" where "chat_messages"."user_id" = $1 order by "chat_messages"."created_at" desc limit $2
+params: f155ca69-cb59-4f41-8b81-650d0ba4d3d7,100
+    at async loadPersistedMessages (app\api\chat\route.ts:60:16)
+    at async GET (app\api\chat\route.ts:270:39)
+  58 |   }
+  59 |
+> 60 |   const rows = await db
+     |                ^
+  61 |     .select({
+  62 |       id: chatMessages.id,
+  63 |       role: chatMessages.role, {
+  query: 'select "id", "role", "content", "created_at" from "chat_messages" where "chat_messages"."user_id" = $1 order by "chat_messages"."created_at" desc limit $2',
+  params: [Array],
+  [cause]: Error [NeonDbError]: Error connecting to database: TypeError: fetch failed
+      at async loadPersistedMessages (app\api\chat\route.ts:60:16)
+      at async GET (app\api\chat\route.ts:270:39)
+    58 |   }
+    59 |
+  > 60 |   const rows = await db
+       |                ^
+    61 |     .select({
+    62 |       id: chatMessages.id,
+    63 |       role: chatMessages.role, {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: [TypeError: fetch failed] {
+      [cause]: [Error [ConnectTimeoutError]: Connect Timeout Error (attempted addresses: 2a05:d014:d70:822:80ae:fda3:b19f:7c8:443, 52.29.229.153:443, 2a05:d014:d70:811:35f4:41f6:293e:8f29:443, 35.157.70.52:443, 2a05:d014:d70:80e:cd1e:657b:af77:3ef1:443, 3.127.101.230:443, timeout: 10000ms)] {
+        code: 'UND_ERR_CONNECT_TIMEOUT'
+      }
+    }
+  }
+}
+ ⨯ Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'
+    at async L (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\playground\[id]\page.js:437:146671) {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json',
+  page: '/playground/f8077177-600c-4bfb-9a24-6ae5e564c73a'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json'
+}
+Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'
+    at async L (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\playground\[id]\page.js:437:146671) {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json',
+  page: '/playground/f8077177-600c-4bfb-9a24-6ae5e564c73a'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\pages-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json',
+  page: '/playground/f8077177-600c-4bfb-9a24-6ae5e564c73a'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\_not-found\page.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json',
+  page: '/playground/f8077177-600c-4bfb-9a24-6ae5e564c73a'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\_not-found\page.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json',
+  page: '/playground/f8077177-600c-4bfb-9a24-6ae5e564c73a'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\_not-found\page.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json',
+  page: '/playground/f8077177-600c-4bfb-9a24-6ae5e564c73a'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\_not-found\page.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json',
+  page: '/playground/f8077177-600c-4bfb-9a24-6ae5e564c73a'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\_not-found\page.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json',
+  page: '/playground/f8077177-600c-4bfb-9a24-6ae5e564c73a'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\_not-found\page.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json',
+  page: '/playground/f8077177-600c-4bfb-9a24-6ae5e564c73a'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\_not-found\page.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json',
+  page: '/playground/f8077177-600c-4bfb-9a24-6ae5e564c73a'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\_not-found\page.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\routes-manifest.json'
+}
+ ⨯ Error: Could not find the module "C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4177945740'
+}
+ ⨯ Error: Could not find the module "C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4177945740'
+}
+ ⨯ Error: Could not find the module "C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4177945740'
+}
+ ⨯ Error: Could not find the module "C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4177945740'
+}
+ ⨯ TypeError: (0 , _features_playground_actions__WEBPACK_IMPORTED_MODULE_4__.getAllPlaygroundForUser) is not a function
+    at DashboardLayout (app\dashboard\layout.tsx:12:55)
+  10 |   children: React.ReactNode;
+  11 | }) {
+> 12 |   const playgroundData = await getAllPlaygroundForUser();
+     |                                                       ^
+  13 |
+  14 |   const technologyIconMap: Record<string, string> = {
+  15 |     REACT: "Zap", {
+  digest: '1365100806'
+}
+ ⨯ TypeError: (0 , _features_playground_actions__WEBPACK_IMPORTED_MODULE_2__.getAllPlaygroundForUser) is not a function
+    at DashboardMainPage (app\dashboard\page.tsx:10:52)
+   8 |
+   9 | const DashboardMainPage = async () => {
+> 10 |   const playgrounds = await getAllPlaygroundForUser();
+     |                                                    ^
+  11 |
+  12 |   return (
+  13 |     <DashboardExperience {
+  digest: '4198647754'
+}
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')] {
+  digest: '1047142095'
+}
+ ⨯ Error: Could not find the module "C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4177945740'
+}
+[TypeError: Cannot read properties of undefined (reading 'call')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')] {
+  page: '/dashboard'
+}
+ ⨯ Error: Could not find the module "C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '299777939'
+}
+ ⨯ Error: Could not find the module "C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '299777939'
+}
+ ⨯ Error: Could not find the module "C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '299777939'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading 'call')] {
+  page: '/dashboard'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ TypeError: (0 , _features_playground_actions__WEBPACK_IMPORTED_MODULE_4__.getAllPlaygroundForUser) is not a function
+    at DashboardLayout (app\dashboard\layout.tsx:12:55)
+  10 |   children: React.ReactNode;
+  11 | }) {
+> 12 |   const playgroundData = await getAllPlaygroundForUser();
+     |                                                       ^
+  13 |
+  14 |   const technologyIconMap: Record<string, string> = {
+  15 |     REACT: "Zap", {
+  digest: '1365100806'
+}
+ ⨯ TypeError: (0 , _features_playground_actions__WEBPACK_IMPORTED_MODULE_2__.getAllPlaygroundForUser) is not a function
+    at DashboardMainPage (app\dashboard\page.tsx:10:52)
+   8 |
+   9 | const DashboardMainPage = async () => {
+> 10 |   const playgrounds = await getAllPlaygroundForUser();
+     |                                                    ^
+  11 |
+  12 |   return (
+  13 |     <DashboardExperience {
+  digest: '4198647754'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\app\\api\\health\\route.js',
+  page: '/api/health'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\pages\\_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\app\\api\\health\\route.js',
+  page: '/api/health'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\pages\\_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\app\\api\\health\\route.js',
+  page: '/api/health'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\pages\\_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\app\\api\\health\\route.js',
+  page: '/api/health'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\pages\\_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\app\\api\\health\\route.js',
+  page: '/api/health'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\pages\\_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\app\\api\\health\\route.js',
+  page: '/api/health'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\danny\\Desktop\\AxisStudio\\axisStudio\\.next\\server\\pages\\_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ Error: Cannot find module './873.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js:1:17710)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js:1:17764) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/api/health'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+Error: Cannot find module './873.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js:1:17710)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js:1:17764) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/api/health'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ Error: Cannot find module './873.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js:1:17710)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js:1:17764) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/api/health'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+Error: Cannot find module './873.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js:1:17710)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\app\api\health\route.js:1:17764) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/api/health'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\webpack-runtime.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\require.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\load-components.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\utils.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\options.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\swc\index.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\config.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\next.js
+- C:\Users\danny\Desktop\AxisStudio\axisStudio\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (C:\Users\danny\Desktop\AxisStudio\axisStudio\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]

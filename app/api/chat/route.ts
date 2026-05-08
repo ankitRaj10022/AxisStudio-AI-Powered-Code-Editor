@@ -4,14 +4,20 @@ import { auth } from "@/auth";
 import { chatMessages } from "@/lib/database/schema";
 import { getDbOrNull } from "@/lib/db";
 import {
-  getOllamaBaseUrl,
-  getOllamaHeaders,
+  generateWithOllama,
   getOllamaModel,
+  OllamaError,
 } from "@/lib/ollama";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+}
+
+type ChatMode = "chat" | "review" | "fix" | "optimize";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
 function isChatMessage(value: unknown): value is ChatMessage {
@@ -24,6 +30,47 @@ function isChatMessage(value: unknown): value is ChatMessage {
     (candidate.role === "user" || candidate.role === "assistant") &&
     typeof candidate.content === "string"
   );
+}
+
+function isChatMode(value: unknown): value is ChatMode {
+  return (
+    value === "chat" ||
+    value === "review" ||
+    value === "fix" ||
+    value === "optimize"
+  );
+}
+
+function isEnhanceContext(
+  value: unknown,
+): value is EnhancePromptRequest["context"] {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    (value.fileName === undefined || typeof value.fileName === "string") &&
+    (value.language === undefined || typeof value.language === "string") &&
+    (value.codeContent === undefined || typeof value.codeContent === "string")
+  );
+}
+
+function normalizeText(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function sanitizeHistory(history: unknown) {
+  if (!Array.isArray(history)) {
+    return [] as ChatMessage[];
+  }
+
+  return history
+    .filter(isChatMessage)
+    .map((message) => ({
+      role: message.role,
+      content: message.content.trim(),
+    }))
+    .filter((message) => message.content.length > 0);
 }
 
 interface EnhancePromptRequest {
@@ -110,7 +157,73 @@ async function persistConversation(
   return true;
 }
 
-async function generateAIResponse(messages: ChatMessage[]) {
+function getModeInstructions(mode: ChatMode) {
+  switch (mode) {
+    case "review":
+      return `Treat this as a code review request.
+- Prioritize correctness, regressions, security, performance, and maintainability.
+- Call out concrete issues first, then suggest improvements.
+- When code is provided, be specific about what should change and why.
+- If context is missing, say what assumption you are making.`;
+    case "fix":
+      return `Treat this as a debugging and bug-fix request.
+- Identify likely root causes before proposing changes.
+- Give the smallest reliable fix first.
+- Include corrected code when it helps.
+- Mention how the user can verify the fix.`;
+    case "optimize":
+      return `Treat this as an optimization request.
+- Focus on performance, reliability, readability, and maintainability.
+- Prefer practical improvements over theoretical ones.
+- Mention tradeoffs when an optimization changes complexity or clarity.
+- If you suggest code changes, explain why they help.`;
+    default:
+      return `Treat this as a general AI coding assistant conversation.
+- Answer coding questions directly and clearly.
+- Give practical suggestions, explanations, and examples when useful.
+- If the user asks for code, provide working code with correct formatting.`;
+  }
+}
+
+function getOllamaGenerationOptions(mode: ChatMode) {
+  const sharedOptions = {
+    num_predict: 1000,
+    repeat_penalty: 1.1,
+    num_ctx: 4096,
+  };
+
+  switch (mode) {
+    case "review":
+      return {
+        ...sharedOptions,
+        temperature: 0.4,
+        top_p: 0.85,
+      };
+    case "fix":
+      return {
+        ...sharedOptions,
+        temperature: 0.35,
+        top_p: 0.85,
+      };
+    case "optimize":
+      return {
+        ...sharedOptions,
+        temperature: 0.5,
+        top_p: 0.9,
+      };
+    default:
+      return {
+        ...sharedOptions,
+        temperature: 0.7,
+        top_p: 0.9,
+      };
+  }
+}
+
+async function generateAIResponse(
+  messages: ChatMessage[],
+  mode: ChatMode = "chat",
+) {
   const systemPrompt = `You are an expert AI coding assistant. You help developers with:
 - Code explanations and debugging
 - Best practices and architecture advice
@@ -119,7 +232,9 @@ async function generateAIResponse(messages: ChatMessage[]) {
 - Code reviews and optimizations
 
 Always provide clear, practical answers. When showing code, use proper formatting with language-specific syntax.
-Keep responses concise but comprehensive. Use code blocks with language specification when providing code examples.`;
+Keep responses concise but comprehensive. Use code blocks with language specification when providing code examples.
+
+${getModeInstructions(mode)}`;
 
   const fullMessages = [{ role: "system", content: systemPrompt }, ...messages];
 
@@ -127,52 +242,11 @@ Keep responses concise but comprehensive. Use code blocks with language specific
     .map((msg) => `${msg.role}: ${msg.content}`)
     .join("\n\n");
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
-  const ollamaBaseUrl = getOllamaBaseUrl();
-  const ollamaModel = getOllamaModel();
-
-  try {
-    const response = await fetch(`${ollamaBaseUrl}/generate`, {
-      method: "POST",
-      headers: getOllamaHeaders(),
-      body: JSON.stringify({
-        model: ollamaModel,
-        prompt,
-        stream: false,
-        options: {
-          temperature: 0.7,
-          top_p: 0.9,
-          max_tokens: 1000,
-          num_predict: 1000,
-          repeat_penalty: 1.1,
-          context_length: 4096,
-        },
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Error from AI model API:", errorText);
-      throw new Error(`AI model API error: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    if (!data.response) {
-      throw new Error("No response from AI model");
-    }
-    return data.response.trim();
-  } catch (error) {
-    clearTimeout(timeoutId);
-    if ((error as Error).name === "AbortError") {
-      throw new Error("Request timeout: AI model took too long to respond");
-    }
-    console.error("AI generation error:", error);
-    throw error;
-  }
+  return generateWithOllama({
+    prompt,
+    timeoutMs: 20000,
+    options: getOllamaGenerationOptions(mode),
+  });
 }
 
 async function enhancePrompt(request: EnhancePromptRequest) {
@@ -192,26 +266,16 @@ Enhanced prompt should:
 Return only the enhanced prompt, nothing else.`;
 
   try {
-    const response = await fetch(`${getOllamaBaseUrl()}/generate`, {
-      method: "POST",
-      headers: getOllamaHeaders(),
-      body: JSON.stringify({
-        model: getOllamaModel(),
-        prompt: enhancementPrompt,
-        stream: false,
-        options: {
-          temperature: 0.3,
-          max_tokens: 500,
-        },
-      }),
+    const result = await generateWithOllama({
+      prompt: enhancementPrompt,
+      timeoutMs: 15000,
+      options: {
+        temperature: 0.3,
+        num_predict: 500,
+      },
     });
 
-    if (!response.ok) {
-      throw new Error("Failed to enhance prompt");
-    }
-
-    const data = await response.json();
-    return data.response?.trim() || request.prompt;
+    return result.response || request.prompt;
   } catch (error) {
     console.error("Prompt enhancement error:", error);
     return request.prompt;
@@ -220,10 +284,30 @@ Return only the enhanced prompt, nothing else.`;
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body: unknown = await req.json();
+
+    if (!isRecord(body)) {
+      return NextResponse.json(
+        { error: "Request body must be a JSON object" },
+        { status: 400 },
+      );
+    }
 
     if (body.action === "enhance") {
-      const enhancedPrompt = await enhancePrompt(body as EnhancePromptRequest);
+      const prompt = normalizeText(body.prompt);
+
+      if (!prompt) {
+        return NextResponse.json(
+          { error: "Prompt is required and must be a non-empty string" },
+          { status: 400 },
+        );
+      }
+
+      const enhancedPrompt = await enhancePrompt({
+        prompt,
+        context: isEnhanceContext(body.context) ? body.context : undefined,
+      });
+
       return NextResponse.json({ enhancedPrompt });
     }
 
@@ -232,31 +316,34 @@ export async function POST(req: NextRequest) {
       history,
       persist,
       clientMessage,
+      mode,
     }: {
       message?: unknown;
       history?: unknown;
       persist?: unknown;
       clientMessage?: unknown;
+      mode?: unknown;
     } = body;
 
-    if (!message || typeof message !== "string") {
+    const normalizedMessage = normalizeText(message);
+    const normalizedClientMessage = normalizeText(clientMessage);
+
+    if (!normalizedMessage) {
       return NextResponse.json(
-        { error: "Message is required and must be a string" },
+        { error: "Message is required and must be a non-empty string" },
         { status: 400 },
       );
     }
 
-    const validHistory = Array.isArray(history)
-      ? history.filter(isChatMessage)
-      : [];
-
-    const recentHistory = validHistory.slice(-10);
+    const requestMode = isChatMode(mode) ? mode : "chat";
+    const recentHistory = sanitizeHistory(history).slice(-10);
     const messages: ChatMessage[] = [
       ...recentHistory,
-      { role: "user", content: message },
+      { role: "user", content: normalizedMessage },
     ];
 
-    const aiResponse = await generateAIResponse(messages);
+    const aiResult = await generateAIResponse(messages, requestMode);
+    const aiResponse = aiResult.response;
 
     if (!aiResponse) {
       throw new Error("Empty response from AI model");
@@ -269,10 +356,7 @@ export async function POST(req: NextRequest) {
         ? await persistConversation(userId, [
             {
               role: "user",
-              content:
-                typeof clientMessage === "string" && clientMessage.trim()
-                  ? clientMessage.trim()
-                  : message,
+              content: normalizedClientMessage || normalizedMessage,
             },
             { role: "assistant", content: aiResponse },
           ])
@@ -280,7 +364,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       response: aiResponse,
-      model: getOllamaModel(),
+      model: aiResult.model || getOllamaModel(),
+      tokens: aiResult.tokens,
+      promptTokens: aiResult.promptTokens,
+      mode: requestMode,
       persisted,
       timestamp: new Date().toISOString(),
     });
@@ -288,13 +375,14 @@ export async function POST(req: NextRequest) {
     console.error("Error in AI chat route:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
+    const statusCode = error instanceof OllamaError ? error.statusCode : 500;
     return NextResponse.json(
       {
         error: "Failed to generate AI response",
         details: errorMessage,
         timestamp: new Date().toISOString(),
       },
-      { status: 500 },
+      { status: statusCode },
     );
   }
 }

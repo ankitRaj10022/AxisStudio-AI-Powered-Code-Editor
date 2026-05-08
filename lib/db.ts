@@ -1,18 +1,50 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool, type PoolConfig } from "pg";
 import * as schema from "@/lib/database/schema";
 
 const POSTGRES_PROTOCOL = /^postgres(ql)?:\/\//i;
 
 type AxisDatabase = ReturnType<typeof createDb>;
+type AxisPoolConfig = PoolConfig & {
+  application_name?: string;
+  enableChannelBinding?: boolean;
+};
 
 const globalForDatabase = globalThis as typeof globalThis & {
   axisStudioDb?: AxisDatabase | null;
 };
 
+function createPoolConfig(url: string): AxisPoolConfig {
+  const connectionUrl = new URL(url);
+  const sslMode = connectionUrl.searchParams.get("sslmode");
+  const channelBindingMode = connectionUrl.searchParams.get("channel_binding");
+  const database = connectionUrl.pathname.replace(/^\/+/, "");
+
+  return {
+    host: connectionUrl.hostname,
+    port: connectionUrl.port ? Number(connectionUrl.port) : 5432,
+    user: decodeURIComponent(connectionUrl.username),
+    password: decodeURIComponent(connectionUrl.password),
+    database: database ? decodeURIComponent(database) : undefined,
+    ssl:
+      sslMode === "disable"
+        ? false
+        : sslMode === "no-verify"
+          ? { rejectUnauthorized: false }
+          : { rejectUnauthorized: true },
+    enableChannelBinding:
+      channelBindingMode === "require" || channelBindingMode === "prefer",
+    connectionTimeoutMillis: 15_000,
+    idleTimeoutMillis: 30_000,
+    keepAlive: true,
+    max: 10,
+    application_name: "axisstudio",
+  };
+}
+
 function createDb(url: string) {
-  const sql = neon(url);
-  return drizzle(sql, { schema });
+  const pool = new Pool(createPoolConfig(url));
+  return drizzle({ client: pool, schema });
 }
 
 export function getDatabaseUrl() {

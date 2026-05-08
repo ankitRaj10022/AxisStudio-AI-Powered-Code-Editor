@@ -1,8 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  getOllamaBaseUrl,
-  getOllamaHeaders,
-  getOllamaModel,
+  generateWithOllama,
+  OllamaError,
 } from "@/lib/ollama";
 
 interface CodeSuggestionRequest {
@@ -48,24 +47,27 @@ export async function POST(request: NextRequest) {
 
     const prompt = buildPrompt(context, suggestionType);
 
-    const suggestion = await generateSuggestion(prompt);
+    const suggestionResult = await generateSuggestion(prompt);
 
     return NextResponse.json({
-      suggestion,
+      suggestion: suggestionResult.suggestion,
       context,
       metadata: {
         language: context.language,
         framework: context.framework,
         position: context.cursorPosition,
+        model: suggestionResult.model,
+        tokens: suggestionResult.tokens,
         generatedAt: new Date().toISOString(),
       },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Context analysis error:", error);
+    const statusCode = error instanceof OllamaError ? error.statusCode : 500;
     return NextResponse.json(
       { error: "Internal server error", message },
-      { status: 500 },
+      { status: statusCode },
     );
   }
 }
@@ -134,41 +136,34 @@ Instructions:
 Generate suggestion:`;
 }
 
-async function generateSuggestion(prompt: string): Promise<string> {
-  try {
-    const response = await fetch(`${getOllamaBaseUrl()}/generate`, {
-      method: "POST",
-      headers: getOllamaHeaders(),
-      body: JSON.stringify({
-        model: getOllamaModel(),
-        prompt,
-        stream: false,
-        options: {
-          temperature: 0.7,
-          max_tokens: 300,
-        },
-      }),
-    });
+async function generateSuggestion(prompt: string): Promise<{
+  suggestion: string;
+  model: string;
+  tokens?: number;
+}> {
+  const result = await generateWithOllama({
+    prompt,
+    options: {
+      temperature: 0.7,
+      num_predict: 300,
+      num_ctx: 4096,
+    },
+  });
 
-    if (!response.ok) {
-      throw new Error(`AI service error: ${response.statusText}`);
-    }
+  let suggestion = result.response;
 
-    const data = await response.json();
-    let suggestion = data.response;
-
-    if (suggestion.includes("```")) {
-      const codeMatch = suggestion.match(/```[\w]*\n?([\s\S]*?)```/);
-      suggestion = codeMatch ? codeMatch[1].trim() : suggestion;
-    }
-
-    suggestion = suggestion.replace(/\|CURSOR\|/g, "").trim();
-
-    return suggestion;
-  } catch (error) {
-    console.error("AI generation error:", error);
-    return "// AI suggestion unavailable";
+  if (suggestion.includes("```")) {
+    const codeMatch = suggestion.match(/```[\w]*\n?([\s\S]*?)```/);
+    suggestion = codeMatch ? codeMatch[1].trim() : suggestion;
   }
+
+  suggestion = suggestion.replace(/\|CURSOR\|/g, "").trim();
+
+  return {
+    suggestion,
+    model: result.model,
+    tokens: result.tokens,
+  };
 }
 
 function detectLanguage(content: string, fileName?: string): string {

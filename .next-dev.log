@@ -1,15 +1,156 @@
 
 > axisstudio@0.1.0 dev
-> next dev --port 3012
+> next dev
 
    ▲ Next.js 15.5.15
-   - Local:        http://localhost:3012
-   - Network:      http://10.95.165.206:3012
+   - Local:        http://localhost:3000
+   - Network:      http://172.25.144.1:3000
    - Environments: .env
 
  ✓ Starting...
- ✓ Ready in 1754ms
- ✓ Compiled /middleware in 305ms (250 modules)
+ ✓ Ready in 12.2s
+ ✓ Compiled /middleware in 242ms (250 modules)
  ○ Compiling /auth/sign-in ...
- ✓ Compiled /auth/sign-in in 1736ms (1660 modules)
- GET /auth/sign-in 200 in 2929ms
+ ✓ Compiled /auth/sign-in in 2.7s (1893 modules)
+ GET /auth/sign-in 200 in 3320ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 1239ms (1901 modules)
+ ○ Compiling / ...
+ GET /api/auth/session 200 in 3548ms
+ ✓ Compiled / in 2.2s (2128 modules)
+ GET /api/auth/session 200 in 2057ms
+ GET / 200 in 4246ms
+ ✓ Compiled /icon.svg in 326ms (1335 modules)
+ GET /icon.svg 200 in 403ms
+ GET /icon.svg 200 in 18ms
+ GET / 200 in 140ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 3.6s (2379 modules)
+ GET /dashboard 200 in 10463ms
+ GET /dashboard 200 in 10647ms
+ GET /dashboard 200 in 15199ms
+ GET /dashboard 200 in 10510ms
+ GET /auth/sign-in 200 in 739ms
+ GET /auth/sign-in 200 in 708ms
+ GET /dashboard 200 in 13385ms
+ GET /icon.svg 200 in 26ms
+ GET /icon.svg 200 in 14ms
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 1675ms (2364 modules)
+ GET /api/health 200 in 2221ms
+ GET /dashboard 200 in 416ms
+ ○ Compiling /api/chat ...
+ ✓ Compiled /api/chat in 1542ms (2366 modules)
+ GET /icon.svg 200 in 1605ms
+ GET /icon.svg 200 in 31ms
+ GET /icon.svg 200 in 20ms
+ GET /dashboard 200 in 205ms
+ GET /icon.svg 200 in 19ms
+ GET /icon.svg 200 in 19ms
+ GET /icon.svg 200 in 18ms
+ POST /api/chat 200 in 9159ms
+ ○ Compiling /api/code-suggestion ...
+ ✓ Compiled /api/code-suggestion in 1319ms (2368 modules)
+ GET /dashboard 200 in 229ms
+ GET /icon.svg 200 in 23ms
+ GET /icon.svg 200 in 10ms
+ GET /icon.svg 200 in 13ms
+ POST /api/code-suggestion 200 in 1841ms
+ ✓ Compiled in 1157ms (1158 modules)
+ GET /dashboard 200 in 204ms
+ GET /icon.svg 200 in 25ms
+ GET /icon.svg 200 in 13ms
+ GET /icon.svg 200 in 11ms
+ GET /api/health 200 in 424ms
+ POST /api/chat 200 in 1178ms
+ POST /api/code-suggestion 200 in 439ms
+ ○ Compiling /playground/[id] ...
+ ✓ Compiled /playground/[id] in 19.4s (4922 modules)
+ ✓ Compiled in 2.5s (1908 modules)
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 200 in 23025ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 200 in 1707ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 200 in 105ms
+ POST /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 200 in 9961ms
+ ○ Compiling /api/template/[id] ...
+ ✓ Compiled /api/template/[id] in 2.2s (4846 modules)
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 200 in 1118ms
+Input Path: C:\Users\danny\Desktop\AxisStudio\axisStudio\axisStudio-staters\hono-nodejs-starter
+Output Path: C:\Users\danny\Desktop\AxisStudio\axisStudio\output\HONO.json
+Skipping ignored file: C:\Users\danny\Desktop\AxisStudio\axisStudio\axisStudio-staters\hono-nodejs-starter\.gitignore
+Skipping ignored file: C:\Users\danny\Desktop\AxisStudio\axisStudio\axisStudio-staters\hono-nodejs-starter\package-lock.json
+Template structure saved to C:\Users\danny\Desktop\AxisStudio\axisStudio\output\HONO.json
+ GET /api/template/f8077177-600c-4bfb-9a24-6ae5e564c73a 200 in 16195ms
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 2.6s (4849 modules)
+ GET /api/health 200 in 3283ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 200 in 1000ms
+ GET /api/health 200 in 145ms
+ ○ Compiling /api/chat ...
+ ✓ Compiled /api/chat in 1417ms (2935 modules)
+ GET /api/chat?history=1&limit=100 500 in 13089ms
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 856ms (2937 modules)
+ GET /api/health 200 in 1004ms
+ GET /api/chat?history=1&limit=100 500 in 10899ms
+ GET /api/health 200 in 33ms
+ POST /api/chat 500 in 26491ms
+ GET /api/chat?history=1&limit=100 500 in 10944ms
+ ✓ Compiled in 5.5s (5085 modules)
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 200 in 2199ms
+ ✓ Compiled in 6.6s (4835 modules)
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 200 in 1877ms
+ ✓ Compiled in 4s (5085 modules)
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 5.3s (5181 modules)
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 11861ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 95ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.9s (5186 modules)
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 5882ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 78ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 2026ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 122ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 1049ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 153ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 2028ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 172ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 2068ms
+ GET /playground/f8077177-600c-4bfb-9a24-6ae5e564c73a 500 in 127ms
+ ✓ Compiled in 1424ms (5186 modules)
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 794ms (3034 modules)
+ GET /api/health 200 in 1000ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1398ms (5189 modules)
+ GET /dashboard 500 in 3041ms
+ GET /dashboard 500 in 31ms
+ ○ Compiling /playgrounds ...
+ ✓ Compiled /playgrounds in 717ms (5191 modules)
+ GET /playgrounds 307 in 1083ms
+ ○ Compiling /api/chat ...
+ ✓ Compiled /api/chat in 572ms (3133 modules)
+ POST /api/chat 400 in 669ms
+ ✓ Compiled /api/code-suggestion in 332ms (3135 modules)
+ POST /api/code-suggestion 400 in 380ms
+ GET /dashboard 500 in 155ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 967ms (5098 modules)
+ GET /api/health 404 in 1423ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 887ms (5194 modules)
+ GET /api/health 500 in 1176ms
+ GET /api/health 500 in 101ms
+ GET /api/health 500 in 165ms
+ GET /api/health 500 in 56ms
+ GET /api/health 500 in 123ms
+ GET /api/health 500 in 38ms
+ ✓ Compiled in 1701ms (5085 modules)
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 754ms (3034 modules)
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1168ms (5189 modules)
+ GET /api/health 500 in 2132ms
+ GET /api/health 500 in 36ms
+ GET /api/health 500 in 122ms
+ GET /api/health 500 in 34ms
+[?25h

@@ -764,7 +764,10 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
   };
 
   const sendCurrentMessage = async () => {
-    if (!input.trim() || isLoading) return;
+    const userInput = input.trim();
+    const currentAttachments = [...attachments];
+
+    if (!userInput || isLoading) return;
 
     const messageType =
       chatMode === "chat"
@@ -776,9 +779,9 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
         : "optimization";
     const newMessage: ChatMessage = {
       role: "user",
-      content: input.trim(),
+      content: userInput,
       timestamp: new Date(),
-      attachments: [...attachments],
+      attachments: currentAttachments,
       id: Date.now().toString(),
       type: messageType,
     };
@@ -789,16 +792,16 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
 
     try {
       // Prepare enhanced context
-      let contextualMessage = getChatModePrompt(chatMode, input.trim(), {
+      let contextualMessage = getChatModePrompt(chatMode, userInput, {
         activeFile: activeFileName,
         activeFileContent: activeFileContent?.substring(0, 2000), // Increased context size
         language: activeFileLanguage,
         cursorPosition,
       });
 
-      if (attachments.length > 0) {
+      if (currentAttachments.length > 0) {
         contextualMessage += "\n\nAttached files:\n";
-        attachments.forEach((file) => {
+        currentAttachments.forEach((file) => {
           contextualMessage += `\n**${file.name}** (${file.language}, ${
             file.type
           }):\n\`\`\`${file.language}\n${file.content.substring(
@@ -814,7 +817,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          clientMessage: input.trim(),
+          clientMessage: userInput,
           message: contextualMessage,
           history: messages.slice(-10).map((msg) => ({
             role: msg.role,
@@ -831,9 +834,13 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
           response: string;
           timestamp?: string;
           tokens?: number;
+          promptTokens?: number;
           model?: string;
         };
-        const suggestions = generateCodeSuggestions(input.trim(), attachments);
+        const suggestions = generateCodeSuggestions(
+          userInput,
+          currentAttachments,
+        );
 
         setMessages((prev) => [
           ...prev,
@@ -848,13 +855,22 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
             model: data.model || "AI Assistant",
           },
         ]);
+        setAttachments([]);
       } else {
+        const errorPayload = (await response.json().catch(() => null)) as {
+          error?: string;
+          details?: string;
+        } | null;
+        const errorMessage =
+          errorPayload?.details ||
+          errorPayload?.error ||
+          "Sorry, I encountered an error while processing your request. Please try again.";
+
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content:
-              "Sorry, I encountered an error while processing your request. Please try again.",
+            content: errorMessage,
             timestamp: new Date(),
             id: Date.now().toString(),
           },
@@ -867,14 +883,13 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
         {
           role: "assistant",
           content:
-            "I'm having trouble connecting right now. Please check your internet connection and try again.",
+            "Unable to reach the configured Ollama service. Start Ollama locally, confirm codellama:latest is available, and try again.",
           timestamp: new Date(),
           id: Date.now().toString(),
         },
       ]);
     } finally {
       setIsLoading(false);
-      setAttachments([]);
     }
   };
 

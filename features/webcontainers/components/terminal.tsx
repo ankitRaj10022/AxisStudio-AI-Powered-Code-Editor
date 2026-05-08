@@ -8,10 +8,9 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Terminal } from "xterm";
-import { FitAddon } from "xterm-addon-fit";
-import { SearchAddon } from "xterm-addon-search";
-import { WebLinksAddon } from "xterm-addon-web-links";
+import type { Terminal } from "xterm";
+import type { FitAddon } from "xterm-addon-fit";
+import type { SearchAddon } from "xterm-addon-search";
 import { Copy, Download, Search, Trash2 } from "lucide-react";
 import type { WebContainer } from "@webcontainer/api";
 import "xterm/css/xterm.css";
@@ -272,8 +271,23 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
       [executeCommand, writePrompt],
     );
 
-    const initializeTerminal = useCallback(() => {
-      if (!terminalContainerRef.current || termRef.current) return;
+    const initializeTerminal = useCallback(async () => {
+      const container = terminalContainerRef.current;
+      if (!container || termRef.current) return;
+
+      const [
+        { Terminal },
+        { FitAddon },
+        { SearchAddon },
+        { WebLinksAddon },
+      ] = await Promise.all([
+        import("xterm"),
+        import("xterm-addon-fit"),
+        import("xterm-addon-search"),
+        import("xterm-addon-web-links"),
+      ]);
+
+      if (!container.isConnected || termRef.current) return;
 
       const terminal = new Terminal({
         cursorBlink: true,
@@ -294,7 +308,7 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
       terminal.loadAddon(fitAddon);
       terminal.loadAddon(webLinksAddon);
       terminal.loadAddon(searchAddon);
-      terminal.open(terminalContainerRef.current);
+      terminal.open(container);
       terminal.onData(handleTerminalInput);
 
       fitAddonRef.current = fitAddon;
@@ -360,7 +374,7 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(
     }, []);
 
     useEffect(() => {
-      initializeTerminal();
+      void initializeTerminal();
 
       const resizeObserver = new ResizeObserver(() => {
         setTimeout(() => {

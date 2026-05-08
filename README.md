@@ -78,6 +78,31 @@ npm run db:push
 ollama run codellama
 ```
 
+If your Ollama model store lives outside the default location, start the daemon
+with `OLLAMA_MODELS` pointed at that folder before opening the app. For this
+repository's current local setup:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-ollama.ps1
+```
+
+Or run the equivalent manually:
+
+```powershell
+$env:OLLAMA_MODELS="X:\Ollama"
+ollama serve
+```
+
+Then confirm the model is visible:
+
+```powershell
+ollama list
+```
+
+The playground AI controls now read `/api/health`, so they show whether Ollama
+is reachable and whether `codellama:latest` is available before chat and inline
+suggestions are used.
+
 Or set `OLLAMA_BASE_URL` and `OLLAMA_MODEL` to a remote compatible endpoint.
 
 ### 6. Run the app

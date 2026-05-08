@@ -42,6 +42,11 @@ export const PlaygroundEditor = ({
   const monacoRef = useRef<Monaco | null>(null);
   const activeFileNameRef = useRef<string | undefined>(undefined);
   const inlineCompletionProviderRef = useRef<any>(null);
+  const suggestionLoadingRef = useRef(suggestionLoading);
+  const triggerSuggestionRef = useRef(onTriggerSuggestion);
+  const rejectSuggestionRef = useRef(onRejectSuggestion);
+  const acceptSuggestionRef = useRef(onAcceptSuggestion);
+  const cursorPositionChangeRef = useRef(onCursorPositionChange);
   const currentSuggestionRef = useRef<{
     text: string;
     position: { line: number; column: number };
@@ -50,13 +55,33 @@ export const PlaygroundEditor = ({
   const isAcceptingSuggestionRef = useRef(false);
   const suggestionAcceptedRef = useRef(false);
   const suggestionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const tabCommandRef = useRef<any>(null);
+  const tabCommandRef = useRef<string | null>(null);
 
   useEffect(() => {
     activeFileNameRef.current = activeFile
       ? `${activeFile.filename}.${activeFile.fileExtension}`
       : undefined;
   }, [activeFile]);
+
+  useEffect(() => {
+    suggestionLoadingRef.current = suggestionLoading;
+  }, [suggestionLoading]);
+
+  useEffect(() => {
+    triggerSuggestionRef.current = onTriggerSuggestion;
+  }, [onTriggerSuggestion]);
+
+  useEffect(() => {
+    rejectSuggestionRef.current = onRejectSuggestion;
+  }, [onRejectSuggestion]);
+
+  useEffect(() => {
+    acceptSuggestionRef.current = onAcceptSuggestion;
+  }, [onAcceptSuggestion]);
+
+  useEffect(() => {
+    cursorPositionChangeRef.current = onCursorPositionChange;
+  }, [onCursorPositionChange]);
 
   const generateSuggestionId = () =>
     `suggestion-${Date.now()}-${Math.random()}`;
@@ -249,7 +274,7 @@ export const PlaygroundEditor = ({
 
       clearCurrentSuggestion();
 
-      onAcceptSuggestion(editor, monaco);
+      acceptSuggestionRef.current(editor, monaco);
 
       return true;
     } catch (error) {
@@ -263,7 +288,7 @@ export const PlaygroundEditor = ({
         console.log("Reset suggestionAcceptedRef flag");
       }, 1000);
     }
-  }, [clearCurrentSuggestion, onAcceptSuggestion]);
+  }, [clearCurrentSuggestion]);
 
   const hasActiveSuggestionAtPosition = useCallback(() => {
     if (!editorRef.current || !currentSuggestionRef.current) return false;
@@ -364,12 +389,12 @@ export const PlaygroundEditor = ({
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, () => {
       console.log("Ctrl+Space pressed, triggering suggestion");
-      onTriggerSuggestion("completion", editor, activeFileNameRef.current);
+      triggerSuggestionRef.current(
+        "completion",
+        editor,
+        activeFileNameRef.current,
+      );
     });
-
-    if (tabCommandRef.current) {
-      tabCommandRef.current.dispose();
-    }
 
     tabCommandRef.current = editor.addCommand(
       monaco.KeyCode.Tab,
@@ -419,7 +444,7 @@ export const PlaygroundEditor = ({
     editor.addCommand(monaco.KeyCode.Escape, () => {
       console.log("Escape pressed");
       if (currentSuggestionRef.current) {
-        onRejectSuggestion(editor);
+        rejectSuggestionRef.current(editor);
         clearCurrentSuggestion();
       }
     });
@@ -428,7 +453,7 @@ export const PlaygroundEditor = ({
       if (isAcceptingSuggestionRef.current) return;
 
       const newPosition = e.position;
-      onCursorPositionChange?.({
+      cursorPositionChangeRef.current?.({
         line: newPosition.lineNumber,
         column: newPosition.column,
       });
@@ -443,17 +468,21 @@ export const PlaygroundEditor = ({
         ) {
           console.log("Cursor moved away from suggestion, clearing");
           clearCurrentSuggestion();
-          onRejectSuggestion(editor);
+          rejectSuggestionRef.current(editor);
         }
       }
 
-      if (!currentSuggestionRef.current && !suggestionLoading) {
+      if (!currentSuggestionRef.current && !suggestionLoadingRef.current) {
         if (suggestionTimeoutRef.current) {
           clearTimeout(suggestionTimeoutRef.current);
         }
 
         suggestionTimeoutRef.current = setTimeout(() => {
-          onTriggerSuggestion("completion", editor, activeFileNameRef.current);
+          triggerSuggestionRef.current(
+            "completion",
+            editor,
+            activeFileNameRef.current,
+          );
         }, 300);
       }
     });
@@ -497,9 +526,9 @@ export const PlaygroundEditor = ({
             if (
               editorRef.current &&
               !currentSuggestionRef.current &&
-              !suggestionLoading
+              !suggestionLoadingRef.current
             ) {
-              onTriggerSuggestion(
+              triggerSuggestionRef.current(
                 "completion",
                 editor,
                 activeFileNameRef.current,
@@ -512,7 +541,7 @@ export const PlaygroundEditor = ({
 
     const initialPosition = editor.getPosition();
     if (initialPosition) {
-      onCursorPositionChange?.({
+      cursorPositionChangeRef.current?.({
         line: initialPosition.lineNumber,
         column: initialPosition.column,
       });
@@ -549,7 +578,6 @@ export const PlaygroundEditor = ({
         inlineCompletionProviderRef.current = null;
       }
       if (tabCommandRef.current) {
-        tabCommandRef.current.dispose();
         tabCommandRef.current = null;
       }
     };

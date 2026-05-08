@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Bot, FileText, Loader2, Power, PowerOff } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Bot,
+  FileText,
+  Loader2,
+  Power,
+  PowerOff,
+  RefreshCw,
+} from "lucide-react";
 import { AIChatSidePanel } from "@/features/ai-chat/components/ai-chat-sidepanel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,6 +42,15 @@ interface ToggleAIProps {
   theme?: "dark" | "light";
 }
 
+interface OllamaRuntimeStatus {
+  baseUrl: string;
+  model: string;
+  reachable: boolean;
+  modelAvailable: boolean;
+  availableModels: string[];
+  message: string;
+}
+
 const ToggleAI: React.FC<ToggleAIProps> = ({
   isEnabled,
   onToggle,
@@ -50,10 +66,72 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
   theme = "dark",
 }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [ollamaStatus, setOllamaStatus] = useState<OllamaRuntimeStatus | null>(
+    null,
+  );
+  const [isCheckingOllama, setIsCheckingOllama] = useState(false);
+
+  const refreshOllamaStatus = useCallback(async () => {
+    setIsCheckingOllama(true);
+
+    try {
+      const response = await fetch("/api/health", {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load health status: ${response.status}`);
+      }
+
+      const data = (await response.json()) as {
+        ollama?: OllamaRuntimeStatus;
+      };
+
+      if (!data.ollama) {
+        throw new Error("Ollama status is missing from /api/health.");
+      }
+
+      setOllamaStatus(data.ollama);
+    } catch (error) {
+      console.error("Failed to load Ollama status:", error);
+      setOllamaStatus({
+        baseUrl: "http://localhost:11434/api",
+        model: "codellama:latest",
+        reachable: false,
+        modelAvailable: false,
+        availableModels: [],
+        message: "Failed to load the local Ollama runtime status.",
+      });
+    } finally {
+      setIsCheckingOllama(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshOllamaStatus();
+  }, [refreshOllamaStatus]);
+
+  const isOllamaReady =
+    ollamaStatus !== null
+      ? ollamaStatus.reachable && ollamaStatus.modelAvailable
+      : null;
+  const statusIndicatorClass = !isEnabled
+    ? "bg-red-500"
+    : isCheckingOllama
+      ? "bg-zinc-400"
+      : isOllamaReady === false
+        ? "bg-amber-400"
+        : "bg-green-500";
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu
+        onOpenChange={(open) => {
+          if (open) {
+            void refreshOllamaStatus();
+          }
+        }}
+      >
         <DropdownMenuTrigger asChild>
           <Button
             size="sm"
@@ -75,7 +153,7 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
             <div
               className={cn(
                 "h-2 w-2 rounded-full animate-pulse",
-                isEnabled ? "bg-green-500" : "bg-red-500",
+                statusIndicatorClass,
               )}
             />
           </Button>
@@ -110,6 +188,88 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
               </div>
             </div>
           )}
+
+          <DropdownMenuSeparator />
+
+          <div className="px-3 pb-3">
+            <div className="rounded-lg border border-border/70 bg-muted/30 p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                    Ollama Runtime
+                  </div>
+                  <div className="mt-1 text-sm font-medium text-foreground">
+                    {ollamaStatus?.model || "codellama:latest"}
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => void refreshOllamaStatus()}
+                  disabled={isCheckingOllama}
+                  className="h-7 w-7 shrink-0"
+                >
+                  {isCheckingOllama ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-xs",
+                    isCheckingOllama
+                      ? "bg-muted text-muted-foreground"
+                      : isOllamaReady
+                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
+                        : ollamaStatus?.reachable
+                          ? "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-300"
+                          : "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-300",
+                  )}
+                >
+                  {isCheckingOllama
+                    ? "Checking"
+                    : isOllamaReady
+                      ? "Connected"
+                      : ollamaStatus?.reachable
+                        ? "Model missing"
+                        : "Offline"}
+                </Badge>
+
+                {ollamaStatus?.baseUrl ? (
+                  <span className="truncate text-[11px] text-muted-foreground">
+                    {ollamaStatus.baseUrl}
+                  </span>
+                ) : null}
+              </div>
+
+              <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                {ollamaStatus?.message || "Checking the local Ollama runtime."}
+              </p>
+
+              {ollamaStatus &&
+              !ollamaStatus.modelAvailable &&
+              ollamaStatus.availableModels.length > 0 ? (
+                <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
+                  Available locally:{" "}
+                  {ollamaStatus.availableModels.slice(0, 3).join(", ")}
+                </p>
+              ) : null}
+
+              {isOllamaReady === false ? (
+                <p className="mt-2 text-[11px] leading-5 text-amber-600 dark:text-amber-300">
+                  If Codellama lives in X:\Ollama, start Ollama with
+                  OLLAMA_MODELS=X:\Ollama before opening AI chat.
+                </p>
+              ) : null}
+            </div>
+          </div>
 
           <DropdownMenuSeparator />
 
