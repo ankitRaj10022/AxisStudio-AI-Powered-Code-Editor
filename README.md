@@ -2,7 +2,7 @@
 
 ![axisStudio Thumbnail](public/axisstudio/readme/AxisStudio-Thumbnail.png)
 
-`axisStudio` is a browser IDE built with Next.js App Router, WebContainers, Monaco Editor, Auth.js, Neon Postgres, Drizzle ORM, and Ollama-compatible AI endpoints. It gives you playground creation, a live preview runtime, file management, AI chat, and inline code suggestions in one workspace.
+AxisStudio is a browser IDE built with Next.js App Router, WebContainers, Monaco Editor, Auth.js, Neon Postgres, Drizzle ORM, and Ollama-compatible AI endpoints. It gives you playground creation, a live preview runtime, file management, AI chat, and inline code suggestions in one workspace.
 
 Live Project URL: [https://axisstudio-codeeditor.vercel.app/](https://axisstudio-codeeditor.vercel.app/)
 
